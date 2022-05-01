@@ -13,11 +13,13 @@
 ## 测试量化交易系统
 
 > cd trder
+> 
 > python trder.py 交易系统名
 
 ## 运行量化交易系统
 
 > cd trder
+> 
 > python run.py 交易系统名
  
 by AI纪元
