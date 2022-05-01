@@ -6,13 +6,17 @@
 
 项目地址：https://github.com/trder/trder/
 
-## 安装
+## 下载
 
 把整个工程源码下载到本地，解压即可。
 
-# 环境准备
+## 环境准备
 
 需要python 3.10以上环境。
+
+## 安装依赖包
+
+> pip install -r requirements.txt
 
 ## 测试量化交易系统
 
