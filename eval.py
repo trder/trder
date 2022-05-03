@@ -12,13 +12,13 @@ if __name__ == '__main__':
     else:
         #获取交易系统名
         trading_system_name = sys.argv[1]
-        #载入交易系统
-        trading_system = load_trading_system(trading_system_name)
-        if not trading_system:
-            print("交易系统载入失败！")
+        #检查交易系统
+        code,msg = check_trading_system(trading_system_name)
+        if code != 200:
+            print(msg)
         else:
             #评估交易系统
-            eval_result = eval_trading_system(trading_system)
+            eval_result = eval_trading_system(trading_system_name)
             if not eval_result:
                 print("出现异常，评估失败！")
             else:
