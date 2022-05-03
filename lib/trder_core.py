@@ -1,6 +1,7 @@
 from trder_file import *
 from trder_lib import *
 from trder_ccxt import *
+from trder_utils import *
 
 def check_trading_system(trading_system_name):
     '''
@@ -30,7 +31,7 @@ def eval_trading_system(trading_system_name):
     '''
     评估交易系统
     '''
-    kline_1m = read_klines("binance","BTC/USDT","1m")
+    kline_1m = read_klines("binance","BTC/USDT","1m",last_year())
     if not trading_system_name:
         return None
     return None
