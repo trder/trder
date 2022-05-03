@@ -18,14 +18,11 @@ def check_trading_system(trading_system_name):
     trading_system_path = dir_name+"/trading.py"
     if not file_exist(trading_system_path):
         return 400, "文件"+trading_system_path+"不存在！"
-    trading_system_lib = dir_name+".trading"
-    if func_exist(trading_system_lib,"entry_signal"):
-        return 400, "方法"+trading_system_lib+".entry_signal不存在！"
-    if func_exist(trading_system_lib,"exit_signal"):
-        return 400, "方法"+trading_system_lib+".exit_signal不存在！"
-    #lib = import(trading_system_lib)
-    #entry_signal
-    #exit_signal
+    trading_lib_name = dir_name+".trading"
+    if not func_exist(trading_lib_name,["trading","entry_signal"]):
+        return 400, "方法"+trading_lib_name+".entry_signal不存在！"
+    if not func_exist(trading_lib_name,["trading","exit_signal"]):
+        return 400, "方法"+trading_lib_name+".exit_signal不存在！"
     return 200, "交易系统‘"+trading_system_name+"’检查完成！"
     
 def eval_trading_system(trading_system_name):
