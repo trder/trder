@@ -15,8 +15,8 @@ if __name__ == '__main__':
         trading_system_name = sys.argv[1]
         #检查交易系统
         code,msg = check_trading_system(trading_system_name)
-        print_log(msg,"S")
         if code == 200:
+            print_log(msg,"S")
             #评估交易系统
             code,eval_result = eval_trading_system(trading_system_name)
             if code != 200:
@@ -24,3 +24,5 @@ if __name__ == '__main__':
             else:
                 #输出评估结果
                 print_log(eval_result,"I")
+        else:
+            print_log(msg,"E")
