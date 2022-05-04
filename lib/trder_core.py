@@ -36,20 +36,25 @@ def eval_trading_system(trading_system_name):
     print_log("开始读取1分钟K线数据……","I")
     code,kline_1m = read_klines("binance","BTC/USDT","1m",last_year())
     if code == 200:
-        print_log(kline_1m,"I")
+        #print_log(kline_1m,"I")
         print_log("1分钟K线数据载入成功！","S")
         print_log("暂停1秒。","I")
         time.sleep(1)
         print_log("开始读取日K线数据……","I")
         code,kline_1d = read_klines("binance","BTC/USDT","1d",last_year())
         if code == 200:
-            print_log(kline_1d,"I")
+            #print_log(kline_1d,"I")
             print_log("日K线数据载入成功！","S")
             code,atr20d = atr_from_1d(kline_1d,14)
             if code == 200:
                 print_log(atr20d,"I")
                 print_log("ATR转化成功！","S")
-                return 200,"交易系统‘"+trading_system_name+"’评估完成！"
+                code,donchian10 = donchian_from_1m(kline_1m,10)
+                code,donchian20 = donchian_from_1m(kline_1m,20)
+                code,donchian55 = donchian_from_1m(kline_1m,55)
+                if code == 200:
+                    print_log("唐奇安通道10/20/55生成成功！","S")
+                    return 200,"交易系统‘"+trading_system_name+"’评估完成！"
             else:
                 return 400,atr20d
         else:

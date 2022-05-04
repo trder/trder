@@ -1,4 +1,3 @@
-import time
 import datetime
 import lib.trder_bcolors
 
