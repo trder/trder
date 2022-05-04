@@ -1,0 +1,29 @@
+import time
+import datetime
+import lib.trder_bcolors
+
+color_map = {
+    "S":lib.trder_bcolors.OKGREEN,
+    "E":lib.trder_bcolors.CREDBG,
+    "W":lib.trder_bcolors.WARNING,
+    "I":lib.trder_bcolors.OKCYAN,
+    "tm":lib.trder_bcolors.HEADER,
+    "end":lib.trder_bcolors.ENDC
+}
+
+def print_log(s,t):
+    '''
+    输出日志
+    输入：
+    s:要输出的日志
+    t:日志类型
+        S成功
+        E失败
+        W警告
+        I提示
+    '''
+    tm = datetime.datetime.now()
+    color_tm = color_map["tm"]
+    color_s = color_map[t]
+    color_end = color_map["end"]
+    print(f"{color_tm}{tm}:{color_end}{color_s}{s}{color_end}")
