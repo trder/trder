@@ -34,6 +34,12 @@ def eval_trading_system(trading_system_name):
     code,kline_1m = read_klines("binance","BTC/USDT","1m",last_year())
     if code == 200:
         print(kline_1m)
-        return "1分钟K线数据载入成功！"
+        print("1分钟K线数据载入成功！")
+        code,kline_1d = read_klines("binance","BTC/USDT","1d",last_year())
+        if code == 200:
+            print(kline_1d)
+            print("1日K线数据载入成功！")
+        else:
+            return kline_1d
     else:
         return kline_1m
