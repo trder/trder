@@ -3,11 +3,11 @@ import datetime
 import lib.trder_bcolors
 
 color_map = {
-    "S":lib.trder_bcolors.OKGREEN,
-    "E":lib.trder_bcolors.CREDBG,
-    "W":lib.trder_bcolors.WARNING,
+    "S":lib.trder_bcolors.CBLUEBG2,
+    "E":lib.trder_bcolors.CREDBG2,
+    "W":lib.trder_bcolors.CYELLOWBG2,
     "I":lib.trder_bcolors.OKCYAN,
-    "tm":lib.trder_bcolors.HEADER,
+    "tm":lib.trder_bcolors.CVIOLET2,
     "end":lib.trder_bcolors.ENDC
 }
 
