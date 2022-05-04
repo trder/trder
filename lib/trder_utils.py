@@ -1,6 +1,7 @@
 #trder_utils.py
 #各种计数逻辑都在这个文件里了
 from collections import *
+from heapq import *
 import time
 
 interval_time = { "1m":60000, "15m": 900000, "1h": 3600000, "4h": 14400000, "1d":86400000 , "1y": 31536000000} #K线间隔时间
@@ -54,20 +55,43 @@ def atr_from_1d(klines_1d,N):
 def donchian_from_1m(kline_1m,N):
     '''
     根据1分钟k线生成唐奇安通道
-    O(n)
+    时间负责度:O(n*logN)，N通常固定为14天，分钟数取对数不超过20，因此可以近似看作O(n)
+    唐奇安通道是指一段时间范围内的最高价和最低价构成的通道
     输入：
     kline_1m:1分钟k线,格式[t,o,h,l,c,v]
-    m:区间长度
+    m:区间长度(天)
     返回：
     唐奇安通道
     '''
-    #过程
-    #N日最高价H，N日最低价L初始化为第一个时间戳的价格
+    #分析：
+    #暴力：时间复杂度达到O(n*m)，排除。
+    #线段树：单次查询复杂度为O(log n),总体为O(n log n)，排除。
+    #
+    #唐奇安通道本质上是一个RMQ问题：https://oi-wiki.org/topic/rmq/
+    #更具体的，它是一个“加减1 RMQ”问题：https://oi-wiki.org/topic/rmq/#1rmq
+    #
+    #定义H(l,r)和L(l,r)分别表示区间[l,r]的最高价和最低价
+    #我们需要找到O(1)复杂度内，从[l,r]转移到[l+1,r+1]的计算方法
+    #考虑区间[l,r]向右移动到[l+1,r+1]时，H(l,r)和L(l,r)的变化
+    #
+    #最终算法：优先队列 O(nlogN)，近似O(n)常数≈14
+    #当计算上界时，把每个最高价和失效时间压入优先队列，最高价优先
+    #取队列中的最高价，如果以及失效，则弹出，取下一个最高价
+    #计算下界的方法一样
     if not kline_1m or not N:
         return 400,"输入的K线或区间长度不能为空"
     ans = []
-    H=L=kline_1m[0][1]
+    HQ = [] #优先队列（最高价优先）
+    LQ = [] #优先队列（最低价优先）
+    expire = N * 24 * 60
     for t,o,h,l,c,v in kline_1m:
-        H = max(H,h)
-        L = min(L,l)
-    return ans
+        exp = t+expire
+        heappush(HQ,(-h,exp))
+        heappush(LQ,(l,exp))
+        while HQ[0][1] <= t:
+            heappop(HQ)
+        while LQ[0][1] <= t:
+            heappop(LQ)
+        H,L = HQ[0][0],LQ[0][0]
+        ans.append((t,H,L))
+    return 200,ans

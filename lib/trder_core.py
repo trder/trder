@@ -53,6 +53,7 @@ def eval_trading_system(trading_system_name):
                 code,donchian20 = donchian_from_1m(kline_1m,20)
                 code,donchian55 = donchian_from_1m(kline_1m,55)
                 if code == 200:
+                    print_log(donchian55,"I")
                     print_log("唐奇安通道10/20/55生成成功！","S")
                     return 200,"交易系统‘"+trading_system_name+"’评估完成！"
             else:
