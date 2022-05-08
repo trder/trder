@@ -49,12 +49,12 @@ def entry_signal(exchange,symbol) -> dict:
   #strategy策略对象
   return strategy
 
-def exit_signal(ORDER) -> tuple:
+def exit_signal(order) -> tuple:
     '''
     退出信号
     输入：
-    ORDER订单对象
-    ORDER订单对象中的属性：
+    order订单对象
+    order订单对象中的属性：
     exchange:"bitfinex", #交易所
     symbol:"BTC/USDT", #币种
     side:"buy", #方向：做多buy或做空sell
@@ -77,16 +77,16 @@ def exit_signal(ORDER) -> tuple:
     '''
     exit_sign = 0  #退出信号强度（介于[0,1]之间）
     etype = 0 #退出类型：0信号退出 1止损退出
-    e,s = ORDER.exchange,ORDER.symbol
-    if ORDER.side == 'buy':
-      if ORDER.current_price < ORDER.entry_price - ORDER.ATR * 2:
+    e,s = order.exchange,order.symbol
+    if order.side == 'buy':
+      if order.current_price < order.entry_price - order.ATR * 2:
         exit_sign = 1
         etype = 1
       elif DON10D_BREAK(e,s) == -1:
         exit_sign = 1
         etype = 0
-    elif ORDER.side == 'sell':
-      if ORDER.current_price > ORDER.entry_price + ORDER.ATR * 2:
+    elif order.side == 'sell':
+      if order.current_price > order.entry_price + order.ATR * 2:
         exit_sign = 1
         etype = 1
       elif DON10D_BREAK(e,s) == 1:

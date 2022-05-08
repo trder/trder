@@ -57,7 +57,7 @@ def atr_from_1d(klines_1d,N):
         lc = c
     return 200,ans
 
-def donchian_from_1m(kline_1m,N):
+def donchian_from_1m(kline_1m,N,DON,HQ,LQ):
     '''
     根据1分钟k线生成唐奇安通道
     时间负责度:O(n*logN)，N通常固定为14天，分钟数取对数不超过20，因此可以近似看作O(n)
@@ -84,10 +84,10 @@ def donchian_from_1m(kline_1m,N):
     #取队列中的最高价，如果以及失效，则弹出，取下一个最高价
     #计算下界的方法一样
     if not kline_1m or not N:
-        return 400,"输入的K线或区间长度不能为空"
-    ans = []
-    HQ = [] #优先队列（最高价优先）
-    LQ = [] #优先队列（最低价优先）
+        return 400,"输入的K线或区间长度不能为空",HQ,LQ
+    #ans = []
+    #HQ = [] #优先队列（最高价优先）
+    #LQ = [] #优先队列（最低价优先）
     expire = N * 24 * 60
     for t,o,h,l,c,v in kline_1m:
         exp = t+expire
@@ -98,5 +98,5 @@ def donchian_from_1m(kline_1m,N):
         while LQ[0][1] <= t:
             heappop(LQ)
         H,L = -HQ[0][0],LQ[0][0]
-        ans.append((t,H,L))
-    return 200,ans
+        DON.append((t,H,L))
+    return 200,DON,HQ,LQ
