@@ -61,7 +61,6 @@ def exit_signal(order) -> tuple:
     order_id:"xxxxxxxxxxxxx", #订单编号
     entry_price:50000.0, #平均成交价格
     best_price:50010.0, #盈利最大价格
-    stop_price:49010.0, #止损价格(对于动态止损策略，stop_price会根据best_price动态变化)
     current_price: 50008.0 #当前价格
     total_amount:"0.1", #数量
     executed_amount:"0.04", #已执行数量
