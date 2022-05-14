@@ -78,14 +78,14 @@ def exit_signal(order) -> tuple:
     etype = 0 #退出类型：0信号退出 1止损退出
     e,s = order.exchange,order.symbol
     if order.side == 'buy':
-      if order.current_price < order.entry_price - order.ATR * 2:
+      if order.current_price < order.entry_price / ( 1 + order.ATRP * 2 ):
         exit_sign = 1
         etype = 1
       elif DON10DBREAK[e,s] == -1:
         exit_sign = 1
         etype = 0
     elif order.side == 'sell':
-      if order.current_price > order.entry_price + order.ATR * 2:
+      if order.current_price > order.entry_price * ( 1 + order.ATRP * 2 ):
         exit_sign = 1
         etype = 1
       elif DON10DBREAK[e,s] == 1:

@@ -1,12 +1,15 @@
 TOTAL_POS = 0
 MARGIN = 0
-ATRP20D = {}
+ATRP20D = {} 
 MA25D = {}
 MA350D = {}
 DON10DBREAK = {}
 DON20DBREAK = {}
 
 def get_ATRP20D(exchange,symbol):
+    '''
+    20日ATR波动百分比（L:最低价;H:最高价;ATRP:(H-L)/L*100%）
+    '''
     return ATRP20D[exchange,symbol]
 
 def get_MA25D(exchange,symbol):
@@ -16,6 +19,9 @@ def get_MA350D(exchange,symbol):
     return MA350D[exchange,symbol]
 
 def set_ATRP20D(exchange,symbol,val):
+    '''
+    20日ATR波动百分比（L:最低价;H:最高价;ATRP:(H-L)/L*100%）
+    '''
     ATRP20D[exchange,symbol] = val
 
 def set_MA25D(exchange,symbol,val):
