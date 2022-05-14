@@ -5,6 +5,7 @@ MA25D = {}
 MA350D = {}
 DON10DBREAK = {}
 DON20DBREAK = {}
+DON55DBREAK = {}
 
 def get_ATRP20D(exchange,symbol):
     '''
@@ -42,17 +43,29 @@ def get_DON20DBREAK(exchange,symbol):
     '''
     return DON20DBREAK[exchange,symbol]
 
-def set_DON10DBREAK(exchange,symbol):
+def get_DON55DBREAK(exchange,symbol):
     '''
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
     '''
-    return False
+    return DON55DBREAK[exchange,symbol]
 
-def set_DON20DBREAK(exchange,symbol):
+def set_DON10DBREAK(exchange,symbol,val):
     '''
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
     '''
-    return False
+    DON10DBREAK[exchange,symbol] = val
+
+def set_DON20DBREAK(exchange,symbol,val):
+    '''
+    是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
+    '''
+    DON20DBREAK[exchange,symbol] = val
+
+def set_DON55DBREAK(exchange,symbol,val):
+    '''
+    是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
+    '''
+    DON55DBREAK[exchange,symbol] = val
 
 def get_TOTAL_POS():
     return TOTAL_POS

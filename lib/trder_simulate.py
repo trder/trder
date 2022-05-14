@@ -72,34 +72,39 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             H55N,L55N = -HQ55[0][0],LQ55[0][0]
             if H10N > H10:
                 #donbreak
-                pass
+                trder.set_DON10DBREAK(exchange, symbol, 1)
+            elif L10N < L10:
+                trder.set_DON10DBREAK(exchange, symbol, -1)
             else:
-                pass
-            if L10N < L10:
-                #donbreak
-                pass
-            else:
-                pass
+                trder.set_DON10DBREAK(exchange, symbol, 0)
             if H20N > H20:
                 #donbreak
-                pass
+                trder.set_DON20DBREAK(exchange, symbol, 1)
+            elif L20N < L20:
+                trder.set_DON20DBREAK(exchange, symbol, -1)
             else:
-                pass
-            if L20N < L20:
-                #donbreak
-                pass
-            else:
-                pass
+                trder.set_DON20DBREAK(exchange, symbol, 0)
             if H55N > H55:
                 #donbreak
-                pass
+                trder.set_DON55DBREAK(exchange, symbol, 1)
+            elif L55N < L55:
+                trder.set_DON55DBREAK(exchange, symbol, -1)
             else:
-                pass
-            if L55N < L55:
-                #donbreak
-                pass
+                trder.set_DON55DBREAK(exchange, symbol, 0)
+            H10,L10 = H10N,L10N
+            H20,L20 = H20N,L20N
+            H55,L55 = H55N,L55N
+            #ATR
+            ATRh,ATRl = max(ATRlc,h),min(ATRlc,l)
+            TR = ATRh-ATRl
+            ATRdq.append(TR)
+            ATRS+=TR
+            if ATRL == ATRN:
+                LTR = ATRdq.popleft()
+                ATRS-=LTR
             else:
-                pass
+                ATRL+=1
+            ATR = ATRS / ATRL
             #update_global_data
 
             strategy = entry_signal_func(exchange,symbol)
