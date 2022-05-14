@@ -20,10 +20,16 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     DON10,HQ10,LQ10 = [],[],[]
     DON20,HQ20,LQ20 = [],[],[]
     DON55,HQ55,LQ55 = [],[],[]
+    DQ_ATR14D = deque() #存储每日振幅TR
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
+    daymins = 24 * 60
+    expire10 = 10 * daymins
+    expire20 = 20 * daymins
+    expire55 = 55 * daymins
+    expire14 = 14 * daymins
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
@@ -35,9 +41,6 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             print_log("唐奇安通道10/20/55生成成功！","S")
         else:
             return final_balance, last_ts
-        expire10 = 10 * 24 * 60
-        expire20 = 20 * 24 * 60
-        expire55 = 55 * 24 * 60
         H10,L10=-inf,inf
         H20,L20=-inf,inf
         H55,L55=-inf,inf
@@ -73,6 +76,26 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             else:
                 pass
             if L10N < L10:
+                #donbreak
+                pass
+            else:
+                pass
+            if H20N > H20:
+                #donbreak
+                pass
+            else:
+                pass
+            if L20N < L20:
+                #donbreak
+                pass
+            else:
+                pass
+            if H55N > H55:
+                #donbreak
+                pass
+            else:
+                pass
+            if L55N < L55:
                 #donbreak
                 pass
             else:

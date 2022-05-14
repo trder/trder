@@ -7,34 +7,34 @@ DON10DBREAK = {}
 DON20DBREAK = {}
 
 def get_ATRP20D(exchange,symbol):
-    return ATRP20D[(exchange,symbol)]
+    return ATRP20D[exchange,symbol]
 
 def get_MA25D(exchange,symbol):
-    return MA25D[(exchange,symbol)]
+    return MA25D[exchange,symbol]
 
 def get_MA350D(exchange,symbol):
-    return MA350D[(exchange,symbol)]
+    return MA350D[exchange,symbol]
 
 def set_ATRP20D(exchange,symbol,val):
-    ATRP20D[(exchange,symbol)] = val
+    ATRP20D[exchange,symbol] = val
 
 def set_MA25D(exchange,symbol,val):
-    MA25D[(exchange,symbol)] = val
+    MA25D[exchange,symbol] = val
 
 def set_MA350D(exchange,symbol,val):
-    MA350D[(exchange,symbol)] = val
+    MA350D[exchange,symbol] = val
 
 def get_DON10DBREAK(exchange,symbol):
     '''
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
     '''
-    return DON10DBREAK[(exchange,symbol)]
+    return DON10DBREAK[exchange,symbol]
 
 def get_DON20DBREAK(exchange,symbol):
     '''
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
     '''
-    return DON20DBREAK[(exchange,symbol)]
+    return DON20DBREAK[exchange,symbol]
 
 def set_DON10DBREAK(exchange,symbol):
     '''
