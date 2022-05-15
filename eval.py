@@ -23,6 +23,6 @@ if __name__ == '__main__':
                 print_log(eval_result,"E")
             else:
                 #输出评估结果
-                print_log(eval_result,"I")
+                print_log(eval_result,"S")
         else:
             print_log(msg,"E")
