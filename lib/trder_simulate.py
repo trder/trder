@@ -123,6 +123,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
+                    print_log("【交易触发】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos * c),"S")
                     fees_usd = pos * c * fees_limit
                     order_dict = {
                             "exchange":exchange,
