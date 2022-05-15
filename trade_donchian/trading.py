@@ -82,6 +82,7 @@ def exit_signal(order) -> tuple:
     exit_sign = 0  #退出信号强度（介于[0,1]之间）
     etype = 0 #退出类型：0信号退出 1止损退出
     e,s = order.exchange,order.symbol
+    print(order.current_price,order.entry_price,order.ATRP,order.side)
     if order.side == 'buy':
       if order.current_price < order.entry_price / ( 1 + order.ATRP / 100 * 2 ):
         exit_sign = 1
