@@ -1,5 +1,6 @@
 TOTAL_POS = 0
 MARGIN = 0
+VARS = {}
 ATRP20D = {} 
 MA25D = {}
 MA350D = {}
@@ -68,15 +69,13 @@ def set_DON55DBREAK(exchange,symbol,val):
     DON55DBREAK[exchange,symbol] = val
 
 def get_TOTAL_POS():
-    return TOTAL_POS
+    return VARS["TOTAL_POS"]
 
 def get_MARGIN():
-    return MARGIN
+    return VARS["MARGIN"]
 
 def set_TOTAL_POS(val):
-    global TOTAL_POS
-    TOTAL_POS = val
+    VARS["TOTAL_POS"] = val
 
 def set_MARGIN(val):
-    global MARGIN
-    MARGIN = val
+    VARS["MARGIN"] = val

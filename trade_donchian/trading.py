@@ -22,16 +22,17 @@ def entry_signal(exchange,symbol) -> dict:
   MA350D：350日均线
   MA25D：25日均线
   DON20D_BREAK：是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
-  TOTAL_POS: 当前总仓位(USD)
+  VARS["TOTAL_POS"]: 当前总仓位(USD)
   MARGIN：可用保证金余额
   RISK: 每ATR波动对应的风险百分比
   ATRP20D: 20日ATR波动百分比
   '''
   e,s = exchange,symbol
   risk = 1.0
-  if TOTAL_POS > 0:
+  if VARS["TOTAL_POS"] > 0:
     return None
-  pos = MARGIN * risk / ATRP20D[e,s]
+  print("MARGIN",VARS["MARGIN"],"ATRP",ATRP20D[e,s])
+  pos = VARS["MARGIN"] * risk / ATRP20D[e,s]
   #简化版的系统不考虑MA过滤器
   #if DON20DBREAK[e,s] == 1 and MA25D[e,s] > MA350D[e,s]:
   if DON20DBREAK[e,s] == 1:
