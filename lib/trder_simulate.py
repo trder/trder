@@ -29,21 +29,15 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     expire10 = 10 * daymins
     expire20 = 20 * daymins
     expire55 = 55 * daymins
-    expire14 = 14 * daymins
+    H10,L10=-inf,inf
+    H20,L20=-inf,inf
+    H55,L55=-inf,inf
+    ATRN,ATRL,ATRS = 20,-1,0
+    ATRdq = deque()
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
             return final_balance, last_ts
-        code,DON10,HQ10,LQ10 = donchian_from_1m(kline_1m,10,DON10,HQ10,LQ10)
-        code,DON20,HQ20,LQ20 = donchian_from_1m(kline_1m,20,DON20,HQ20,LQ20)
-        code,DON55,HQ55,LQ55 = donchian_from_1m(kline_1m,55,DON55,HQ55,LQ55)
-        if code == 200:
-            print_log("唐奇安通道10/20/55生成成功！","S")
-        else:
-            return final_balance, last_ts
-        H10,L10=-inf,inf
-        H20,L20=-inf,inf
-        H55,L55=-inf,inf
         for t,o,h,l,c,v in kline_1m:
             #calculate
             exp10 = t + expire10
@@ -94,19 +88,29 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             H10,L10 = H10N,L10N
             H20,L20 = H20N,L20N
             H55,L55 = H55N,L55N
+            last_day = t - daymins
             #ATR
-            ATRh,ATRl = max(ATRlc,h),min(ATRlc,l)
-            TR = ATRh-ATRl
-            ATRdq.append(TR)
-            ATRS+=TR
-            if ATRL == ATRN:
-                LTR = ATRdq.popleft()
-                ATRS-=LTR
+            if not ATRdq or ATRdq[-1][0] <= last_day:
+                if ATRdq:
+                    TR = ATRdq[-1][2] - ATRdq[-1][1]
+                    ATRS+=TR
+                ATRdq.append([t,l,h])
+                if ATRL == ATRN:
+                    _, LTR_L, LTR_H = ATRdq.popleft()
+                    LTR = LTR_H - LTR_L
+                    ATRS-=LTR
+                else:
+                    ATRL+=1
             else:
-                ATRL+=1
-            ATR = ATRS / ATRL
+                ATRdq[-1][1] = min(ATRdq[-1][1],l)
+                ATRdq[-1][2] = max(ATRdq[-1][2],h)
+            #ATR = SUM(TR) / CNT(TR)
+            if ATRL > 0:
+                ATR = ATRS / ATRL
+            else:
+                ATR = 0
+                continue
             #update_global_data
-
             strategy = entry_signal_func(exchange,symbol)
             #process_stategy
             if strategy:
@@ -129,8 +133,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                             "status":2,
                             "timestamp":time.time(),
                             "fees": pos * c,
-                            "ATR": atr,
-                            "ATRP": atr / c,
+                            "ATR": ATR,
+                            "ATRP": ATR / c,
                         }
                         )
             for order in order_list:
