@@ -26,6 +26,7 @@
 
 ``` Python3
 from trder import *
+
 '''
 唐奇安趋势系统
 以下内容摘自《海龟交易法则》：
@@ -35,7 +36,7 @@ from trder import *
 如果25日均线在350日均线之下，只能做空。
 这个系统还规定了2ATR的止损 退出点，这与原版海龟系统相同。
 '''
-def entry_signal(exchange:string,symbol:string) -> dict:
+def entry_signal(exchange,symbol) -> dict:
   '''
   入场信号
   输入：
@@ -48,26 +49,31 @@ def entry_signal(exchange:string,symbol:string) -> dict:
   MA350D：350日均线
   MA25D：25日均线
   DON20D_BREAK：是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
-  TOTAL_POS: 当前总仓位(USD)
+  VARS["TOTAL_POS"]: 当前总仓位(USD)
   MARGIN：可用保证金余额
   RISK: 每ATR波动对应的风险百分比
   ATRP20D: 20日ATR波动百分比
   '''
   e,s = exchange,symbol
   risk = 1.0
-  if TOTAL_POS > 0:
+  if VARS["TOTAL_POS"] > 0:
     return None
-  pos = MARGIN * risk / ATRP20D(e,s)
-  if DON20D_BREAK(e,s) == 1 and MA25D(e,s) > MA350D(e,s):
+  #print("MARGIN",VARS["MARGIN"],"ATRP",ATRP20D[e,s])
+  pos = VARS["MARGIN"] * risk / ATRP20D[e,s]
+  #简化版的系统不考虑MA过滤器
+  #if DON20DBREAK[e,s] == 1 and MA25D[e,s] > MA350D[e,s]:
+  if DON20DBREAK[e,s] == 1:
     strategy = {
     "sign":1.0, #信号强度
-    "side":"buy" #方向：做多buy或做空sell
+    "side":"buy", #方向：做多buy或做空sell
     "pos":pos #头寸大小：（以USD为单位）
     }
-  elif DON20D_BREAK(e,s) == -1 and MA25D(e,s) < MA350D(e,s):
+  #简化版的系统不考虑MA过滤器
+  #elif DON20DBREAK[e,s] == -1 and MA25D[e,s] < MA350D[e,s]:
+  elif DON20DBREAK[e,s] == -1:
     strategy = {
     "sign":1.0, #信号强度
-    "side":"sell" #方向：做多buy或做空sell
+    "side":"sell", #方向：做多buy或做空sell
     "pos":pos #头寸大小：（以USD为单位）
     }
   else:
@@ -75,19 +81,18 @@ def entry_signal(exchange:string,symbol:string) -> dict:
   #strategy策略对象
   return strategy
 
-def exit_signal(ORDER:"order") -> tuple:
+def exit_signal(order) -> tuple:
     '''
     退出信号
     输入：
-    ORDER订单对象
-    ORDER订单对象中的属性：
+    order订单对象
+    order订单对象中的属性：
     exchange:"bitfinex", #交易所
     symbol:"BTC/USDT", #币种
     side:"buy", #方向：做多buy或做空sell
     order_id:"xxxxxxxxxxxxx", #订单编号
     entry_price:50000.0, #平均成交价格
     best_price:50010.0, #盈利最大价格
-    stop_price:49010.0, #止损价格(对于动态止损策略，stop_price会根据best_price动态变化)
     current_price: 50008.0 #当前价格
     total_amount:"0.1", #数量
     executed_amount:"0.04", #已执行数量
@@ -103,19 +108,20 @@ def exit_signal(ORDER:"order") -> tuple:
     '''
     exit_sign = 0  #退出信号强度（介于[0,1]之间）
     etype = 0 #退出类型：0信号退出 1止损退出
-    e,s = ORDER.exchange,ORDER.symbol
-    if ORDER.side == 'buy':
-      if ORDER.current_price < ORDER.entry_price - ORDER.ATR * 2:
+    e,s = order.exchange,order.symbol
+    #print(order.current_price,order.entry_price,order.ATRP,order.side)
+    if order.side == 'buy':
+      if order.current_price < order.entry_price / ( 1 + order.ATRP / 100 * 2 ):
         exit_sign = 1
         etype = 1
-      elif DON10D_BREAK(e,s) == -1:
+      elif DON10DBREAK[e,s] == -1:
         exit_sign = 1
         etype = 0
-    elif ORDER.side == 'sell':
-      if ORDER.current_price > ORDER.entry_price + ORDER.ATR * 2:
+    elif order.side == 'sell':
+      if order.current_price > order.entry_price * ( 1 + order.ATRP / 100 * 2 ):
         exit_sign = 1
         etype = 1
-      elif DON10D_BREAK(e,s) == 1:
+      elif DON10DBREAK[e,s] == 1:
         exit_sign = 1
         etype = 0
     return exit_sign, etype
