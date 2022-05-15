@@ -116,6 +116,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             else:
                 ATRP = 0
                 continue
+            if ATRL < ATRN:
+                continue
             trder.set_ATRP20D(exchange,symbol,ATRP)
             #update_global_data
             strategy = entry_signal_func(exchange,symbol)
@@ -123,7 +125,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
-                    print_log("【交易触发】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos),"S")
+                    #print_log("【交易触发】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos),"S")
                     fees_usd = pos * fees_limit
                     amount = pos / c
                     order_dict = {
@@ -162,7 +164,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 #exit_sign 退出信号强度（介于[0,1]之间）
                 #etype 退出类型：0信号退出 1止损退出
                 if exit_sign:
-                    print_log("【订单退出】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(order["current_position"]),"E")
+                    #print_log("【订单退出】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(order["current_position"]),"E")
                     remove_list.append(order)
                     fees = fees_limit if etype == 0 else fees_market
                     profit = 0
@@ -170,6 +172,10 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                         profit = order["current_position"]*(1-fees)-order["entry_position"]
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
+                    if profit >= 0:
+                        print_log("【win】"+str(final_balance)+"+"+str(profit),"S")
+                    else:
+                        print_log("【loss】"+str(final_balance)+str(profit),"E")
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
                     if final_balance <= 0:
