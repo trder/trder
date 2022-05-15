@@ -1,6 +1,7 @@
 from lib.trder_ccxt import *
 from lib.trder_lib import *
 from lib.trder_utils import *
+from types import SimpleNamespace
 import trder
 
 fees_limit = 0.001 #限价单手续费
@@ -12,13 +13,13 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     评估交易系统(单市场)
     '''
     final_balance, last_ts = init_balance, since
-    code,kline_1d = read_klines_all(exchange,symbol,"1d",last_ts)
-    print_log("日线周期["+stamp_to_date(kline_1d[0][0])+"~"+stamp_to_date(kline_1d[-1][0])+"],条目数："+str(len(kline_1d)))
-    code,atr14d = atr_from_1d(kline_1d,14)
-    if code == 200:
-        print_log("ATR转化成功！","S")
-    else:
-        return final_balance, last_ts
+    #code,kline_1d = read_klines_all(exchange,symbol,"1d",last_ts)
+    #print_log("日线周期["+stamp_to_date(kline_1d[0][0])+"~"+stamp_to_date(kline_1d[-1][0])+"],条目数："+str(len(kline_1d)),'I')
+    #code,atr14d = atr_from_1d(kline_1d,14)
+    #if code == 200:
+    #    print_log("ATR转化成功！","S")
+    #else:
+    #    return final_balance, last_ts
     order_list = []
     HQ10,LQ10 = [],[]
     HQ20,LQ20 = [],[]
@@ -122,8 +123,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
-                    order_list.append(
-                        {
+                    fees_usd = pos * c * fees_limit
+                    order_dict = {
                             "exchange":exchange,
                             "symbol":symbol,
                             "side":side,
@@ -136,37 +137,48 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                             "unexecuted_amount":0,
                             "status":2, #0未执行;1部分执行;2全部执行
                             "timestamp":time.time(),
-                            "position": pos * c,
-                            "fees": pos * c * fees_limit,
+                            "entry_position": pos * c,
+                            "fees": fees_usd,
                             #"ATR": ATR,
                             "ATRP": ATRP,
                         }
-                        )
+                    order_list.append(order_dict)
+                    final_balance -= fees_usd
+                    trder.set_MARGIN(final_balance)
             remove_list = []
             tot_pos = 0
             for order in order_list:
                 #if order["exchange"] == exchange and order["symbol"] == symbol:
                 order["current_price"] = c
-                order["position"] = c * order["executed_amount"]
+                order["current_position"] = c * order["executed_amount"]
                 if order["side"] == 'buy':
                     order["best_price"] = max(order["best_price"],c)
                 elif order["side"] == 'sell':
                     order["best_price"] = min(order["best_price"],c)
-                exit_sign, etype = exit_signal_func(order)
+                exit_sign, etype = exit_signal_func(SimpleNamespace(**order))
                 #process_exit
                 #exit_sign 退出信号强度（介于[0,1]之间）
                 #etype 退出类型：0信号退出 1止损退出
                 if exit_sign:
                     remove_list.append(order)
+                    fees = fees_limit if etype == 0 else fees_market
                     profit = 0
+                    if order["side"] == 'buy':
+                        profit = order["current_position"]*(1-fees)-order["entry_position"]
+                    elif order["side"] == 'sell':
+                        profit = order["entry_position"] - order["current_position"]*(1+fees)
+                    final_balance += profit
+                    trder.set_MARGIN(final_balance)
+                    if final_balance <= 0:
+                        return final_balance, t
                 else:
-                    tot_pos+=order["position"]
+                    tot_pos+=order["current_position"]
 
             trder.set_TOTAL_POS(tot_pos)
 
             for order in remove_list:
                 order_list.remove(order)
             
-
-        print_log("暂停一秒","I")
-        time.sleep(1)
+        print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")
+        time.sleep(0.5)
+    return final_balance, last_ts

@@ -39,3 +39,4 @@ def eval_trading_system(trading_system_name):
     print_log("初始余额"+str(init_balance)+"，开始时间"+stamp_to_date(since),"I")
     final_balance, last_ts = simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since)
     print_log("最终余额："+str(final_balance)+"，结束时间："+stamp_to_date(last_ts),"S")
+    return 200,"评估完成"
