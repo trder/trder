@@ -123,8 +123,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
-                    print_log("【交易触发】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos * c),"S")
-                    fees_usd = pos * c * fees_limit
+                    print_log("【交易触发】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos),"S")
+                    fees_usd = pos * fees_limit
+                    amount = pos / c
                     order_dict = {
                             "exchange":exchange,
                             "symbol":symbol,
@@ -133,12 +134,12 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                             "entry_price":c,
                             "best_price":c,
                             "current_price":c,
-                            "total_amount":pos,
-                            "executed_amount":pos,
+                            "total_amount":amount,
+                            "executed_amount":amount,
                             "unexecuted_amount":0,
                             "status":2, #0未执行;1部分执行;2全部执行
                             "timestamp":time.time(),
-                            "entry_position": pos * c,
+                            "entry_position": pos,
                             "fees": fees_usd,
                             #"ATR": ATR,
                             "ATRP": ATRP,
@@ -161,6 +162,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 #exit_sign 退出信号强度（介于[0,1]之间）
                 #etype 退出类型：0信号退出 1止损退出
                 if exit_sign:
+                    print_log("【订单退出】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(order["current_position"]),"E")
                     remove_list.append(order)
                     fees = fees_limit if etype == 0 else fees_market
                     profit = 0
