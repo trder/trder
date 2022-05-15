@@ -3,6 +3,9 @@ from lib.trder_lib import *
 from lib.trder_utils import *
 import trder
 
+fees_limit = 0.001 #限价单手续费
+fees_market = 0.002 #市价单手续费
+
 inf = float("inf")
 def simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since):
     '''
@@ -17,10 +20,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     else:
         return final_balance, last_ts
     order_list = []
-    DON10,HQ10,LQ10 = [],[],[]
-    DON20,HQ20,LQ20 = [],[],[]
-    DON55,HQ55,LQ55 = [],[],[]
-    DQ_ATR14D = deque() #存储每日振幅TR
+    HQ10,LQ10 = [],[]
+    HQ20,LQ20 = [],[]
+    HQ55,LQ55 = [],[]
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
@@ -34,6 +36,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     H55,L55=-inf,inf
     ATRN,ATRL,ATRS = 20,-1,0
     ATRdq = deque()
+    trder.set_MARGIN(final_balance)
+    trder.set_TOTAL_POS(0)
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
@@ -92,12 +96,13 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             #ATR
             if not ATRdq or ATRdq[-1][0] <= last_day:
                 if ATRdq:
-                    TR = ATRdq[-1][2] - ATRdq[-1][1]
+                    TR_L,TR_H = ATRdq[-1][1],ATRdq[-1][2]
+                    TR = (TR_H - TR_L) / TR_L * 100
                     ATRS+=TR
                 ATRdq.append([t,l,h])
                 if ATRL == ATRN:
                     _, LTR_L, LTR_H = ATRdq.popleft()
-                    LTR = LTR_H - LTR_L
+                    LTR = (LTR_H - LTR_L) / LTR_L * 100
                     ATRS-=LTR
                 else:
                     ATRL+=1
@@ -106,18 +111,17 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 ATRdq[-1][2] = max(ATRdq[-1][2],h)
             #ATR = SUM(TR) / CNT(TR)
             if ATRL > 0:
-                ATR = ATRS / ATRL
+                ATRP = ATRS / ATRL
             else:
-                ATR = 0
+                ATRP = 0
                 continue
+            trder.set_ATRP20D(exchange,symbol,ATRP)
             #update_global_data
             strategy = entry_signal_func(exchange,symbol)
             #process_stategy
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
-                    if side == 'buy':
-                        order_list.append()
                     order_list.append(
                         {
                             "exchange":exchange,
@@ -130,16 +134,39 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                             "total_amount":pos,
                             "executed_amount":pos,
                             "unexecuted_amount":0,
-                            "status":2,
+                            "status":2, #0未执行;1部分执行;2全部执行
                             "timestamp":time.time(),
-                            "fees": pos * c,
-                            "ATR": ATR,
-                            "ATRP": ATR / c,
+                            "position": pos * c,
+                            "fees": pos * c * fees_limit,
+                            #"ATR": ATR,
+                            "ATRP": ATRP,
                         }
                         )
+            remove_list = []
+            tot_pos = 0
             for order in order_list:
+                #if order["exchange"] == exchange and order["symbol"] == symbol:
+                order["current_price"] = c
+                order["position"] = c * order["executed_amount"]
+                if order["side"] == 'buy':
+                    order["best_price"] = max(order["best_price"],c)
+                elif order["side"] == 'sell':
+                    order["best_price"] = min(order["best_price"],c)
                 exit_sign, etype = exit_signal_func(order)
                 #process_exit
+                #exit_sign 退出信号强度（介于[0,1]之间）
+                #etype 退出类型：0信号退出 1止损退出
+                if exit_sign:
+                    remove_list.append(order)
+                    profit = 0
+                else:
+                    tot_pos+=order["position"]
+
+            trder.set_TOTAL_POS(tot_pos)
+
+            for order in remove_list:
+                order_list.remove(order)
+            
 
         print_log("暂停一秒","I")
         time.sleep(1)
