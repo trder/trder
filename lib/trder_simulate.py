@@ -191,9 +191,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
                     if profit >= 0:
-                        print_log("【盈利退出】"+str(final_balance)+"+"+str(profit),"S")
+                        print_log("【盈利退出】原始余额："+str(final_balance)+"；盈利金额："+str(profit)+"；最新余额："+str(final_balance + profit),"S")
                     else:
-                        print_log("【亏损退出】"+str(final_balance)+str(profit),"E")
+                        print_log("【亏损退出】原始余额："+str(final_balance)+"；亏损金额："+str(abs(profit))+"；最新余额："+str(final_balance + profit),"E")
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
                     #print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")

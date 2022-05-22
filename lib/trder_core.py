@@ -28,7 +28,7 @@ def check_trading_system(trading_system_name,param):
         return 400, "方法"+trading_lib_name+".entry_signal不存在！"
     if not func_exist(trading_lib_name,["trading","exit_signal"]):
         return 400, "方法"+trading_lib_name+".exit_signal不存在！"
-    return 200, "交易系统‘"+trading_system_name+"’检查完成！"
+    return 200, "交易系统‘"+trading_system_name+"’载入成功！"
     
 def eval_trading_system(trading_system_name,param):
     '''
