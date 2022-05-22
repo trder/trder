@@ -3,12 +3,13 @@ from lib.trder_lib import *
 from lib.trder_utils import *
 from types import SimpleNamespace
 import trder
+from lib.log_file import *
 
 fees_limit = 0.001 #限价单手续费
 fees_market = 0.002 #市价单手续费
 
 inf = float("inf")
-def simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since):
+def simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param):
     '''
     评估交易系统(单市场)
     '''
@@ -24,11 +25,12 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     HQ10,LQ10 = [],[]
     HQ20,LQ20 = [],[]
     HQ55,LQ55 = [],[]
+    flog = log_file(param['-o']) if '-o' in param else None
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
-    daymins = 24 * 60
+    daymins = 24 * 60 * 60 * 1000
     expire10 = 10 * daymins
     expire20 = 20 * daymins
     expire55 = 55 * daymins
@@ -116,16 +118,32 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             else:
                 ATRP = 0
                 continue
-            if ATRL < ATRN:
-                continue
+            #if ATRL < ATRN:
+            #    continue
             trder.set_ATRP20D(exchange,symbol,ATRP)
+            if flog:
+                flog.write_line("------------"+str(stamp_to_date(t))+"------------")
+                flog.write_line("o:"+str(o)+";h:"+str(h)+";l:"+str(l)+";c:"+str(c))
+                flog.write_line("TOTAL_POS:"+str(trder.TOTAL_POS))
+                flog.write_line("MARGIN:"+str(trder.MARGIN))
+                flog.write_line("VARS:"+str(trder.VARS))
+                flog.write_line("ATRP20D:"+str(trder.ATRP20D))
+                flog.write_line("H10:"+str(H10)+";L10:"+str(L10)+";exp10:"+str(exp10))
+                flog.write_line("DON10DBREAK:"+str(trder.DON10DBREAK))
+                flog.write_line("H20:"+str(H20)+";L20:"+str(L20)+";exp20:"+str(exp20))
+                flog.write_line("DON20DBREAK:"+str(trder.DON20DBREAK))
+                flog.write_line("H55:"+str(H55)+";L55:"+str(L55)+";exp55:"+str(exp55))
+                flog.write_line("DON55DBREAK:"+str(trder.DON55DBREAK))
             #update_global_data
             strategy = entry_signal_func(exchange,symbol)
             #process_stategy
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
-                    #print_log("【交易触发】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos),"S")
+                    #print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")
+                    side_txt = "做多" if side == 'buy' else "做空"
+                    side_color = "S" if side == 'buy' else "E"
+                    print_log("【"+side_txt+"】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos),side_color)
                     fees_usd = pos * fees_limit
                     amount = pos / c
                     order_dict = {
@@ -173,11 +191,12 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
                     if profit >= 0:
-                        print_log("【win】"+str(final_balance)+"+"+str(profit),"S")
+                        print_log("【盈利退出】"+str(final_balance)+"+"+str(profit),"S")
                     else:
-                        print_log("【loss】"+str(final_balance)+str(profit),"E")
+                        print_log("【亏损退出】"+str(final_balance)+str(profit),"E")
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
+                    #print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")
                     if final_balance <= 0:
                         return final_balance, t
                 else:
@@ -188,6 +207,6 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             for order in remove_list:
                 order_list.remove(order)
             
-        print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")
+        print_log("时间："+ stamp_to_date(last_ts) +"；价格："+str(c)+"；余额："+str(final_balance)+"             ","I",'\r')
         time.sleep(0.5)
     return final_balance, last_ts

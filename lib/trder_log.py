@@ -10,7 +10,7 @@ color_map = {
     "end":lib.trder_bcolors.ENDC
 }
 
-def print_log(s,t):
+def print_log(s,t,end='\n'):
     '''
     输出日志
     输入：
@@ -25,4 +25,4 @@ def print_log(s,t):
     color_tm = color_map["tm"]
     color_s = color_map[t]
     color_end = color_map["end"]
-    print(f"{color_tm}{tm}:{color_end}{color_s}{s}{color_end}")
+    print(f"{color_tm}{tm}:{color_end}{color_s}{s}{color_end}",end=end)

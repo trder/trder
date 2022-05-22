@@ -138,17 +138,29 @@ def exit_signal(order) -> tuple:
 ```
 更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_donchian/trading.py)。
 
-## 测试量化交易系统
+## 测试量化交易系统(不输出日志)
 
 > cd trder
 > 
-> python trder.py 交易系统名
+> python eval.py 交易系统名
 
 如:
 
 > cd trder
 > 
-> python trder.py donchian
+> python eval.py donchian
+
+## 测试量化交易系统(输出日志)
+
+> cd trder
+> 
+> python eval.py 交易系统名 -o eval_log.txt
+
+如:
+
+> cd trder
+> 
+> python eval.py donchian -o log.txt
 
 ## 运行量化交易系统
 

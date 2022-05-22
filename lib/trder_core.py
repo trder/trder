@@ -6,7 +6,7 @@ from lib.trder_utils import *
 from lib.trder_log import *
 import time
 
-def check_trading_system(trading_system_name):
+def check_trading_system(trading_system_name,param):
     '''
     检查交易系统
     输入：
@@ -30,12 +30,12 @@ def check_trading_system(trading_system_name):
         return 400, "方法"+trading_lib_name+".exit_signal不存在！"
     return 200, "交易系统‘"+trading_system_name+"’检查完成！"
     
-def eval_trading_system(trading_system_name):
+def eval_trading_system(trading_system_name,param):
     '''
     评估交易系统
     '''
     init_balance, since, exchange, symbol = 1000.0, last_year(), "binance", "BTC/USDT"
-    print_log("模拟交易\n交易所" + exchange + ",市场" + symbol,"I")
+    print_log("模拟交易：交易所" + exchange + "；市场" + symbol,"I")
     print_log("初始余额"+str(init_balance)+"，开始时间"+stamp_to_date(since),"I")
-    final_balance, last_ts = simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since)
+    final_balance, last_ts = simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param)
     return 200,"最终余额："+str(final_balance)+"，结束时间："+stamp_to_date(last_ts)

@@ -20,7 +20,7 @@ def read_klines_all(exchange,symbol,intervals,since):
 
 def read_klines_once(exchange,symbol,intervals,since):
     exchangeObj = getattr(ccxt, exchange, None)
-    print_log("正在读取K线数据("+intervals+")，起始时间：" + stamp_to_date(since),"I")
+    #print_log("正在读取K线数据("+intervals+")，起始时间：" + stamp_to_date(since),"I")
     try:
         ohlcv_list = exchangeObj().fetch_ohlcv(symbol, intervals, since)
     except Exception as e:
@@ -31,5 +31,5 @@ def read_klines_once(exchange,symbol,intervals,since):
     if not ohlcv_list:
         return 400,"K线数据为空。",-1
     end_stamp = int(ohlcv_list[-1][0])
-    print_log("K线数据("+intervals+")读取完毕，结束时间：" + stamp_to_date(end_stamp),"I")
+    #print_log("K线数据("+intervals+")读取完毕，结束时间：" + stamp_to_date(end_stamp),"I")
     return 200,ohlcv_list,end_stamp
