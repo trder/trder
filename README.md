@@ -30,7 +30,7 @@ P0平台不支持训练AI（P1平台），也没有实盘交易功能（P2平台
 
 ## 创建交易系统
 
-在trder目录下(与trder.py同级的目录)，创建`trade_交易系统名`文件夹。如`trade_唐奇安趋势系统`。
+在trder目录下(与trder.py同级的目录)，创建`trade_交易系统名`文件夹。如`trade_donchian`。
 
 在文件夹下创建文件`trading.py`,示例代码如下。
 
@@ -38,9 +38,9 @@ P0平台不支持训练AI（P1平台），也没有实盘交易功能（P2平台
 from trder import *
 
 '''
-唐奇安趋势系统
+donchian
 以下内容摘自《海龟交易法则》：
-唐奇安趋势系统是简化版的海龟交易系统。
+donchian是简化版的海龟交易系统。
 它采用20日突破入市策略，10日突破退出策略，还有一个350日/25日指数移动平均趋势过滤器。
 交易者们严格遵守短期移动均线所指示的方向:如果25日均线在350日均线之上，只能做多;
 如果25日均线在350日均线之下，只能做空。
@@ -136,7 +136,7 @@ def exit_signal(order) -> tuple:
         etype = 0
     return exit_sign, etype
 ```
-更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_唐奇安趋势系统/trading.py)。
+更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_donchian/trading.py)。
 
 ## 测试量化交易系统
 
@@ -148,7 +148,7 @@ def exit_signal(order) -> tuple:
 
 > cd trder
 > 
-> python eval.py 唐奇安趋势系统
+> python eval.py donchian
 
 ## 可选参数
 
@@ -168,7 +168,7 @@ def exit_signal(order) -> tuple:
 
 > cd trder
 > 
-> python run.py 唐奇安趋势系统
+> python run.py donchian
 
 ## 自顶而下的构造
 

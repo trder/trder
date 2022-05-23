@@ -1,5 +1,5 @@
 from trder import *
-#唐奇安趋势系统
+#donchian
 def entry_signal(exchange,symbol) -> dict: #入市信号
   e,s = exchange,symbol
   risk = 1.0
