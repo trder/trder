@@ -119,8 +119,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             else:
                 ATRP = 0
                 continue
-            #if ATRL < ATRN:
-            #    continue
+            if ATRL < ATRN:
+                continue
             trder.set_ATRP20D(exchange,symbol,ATRP)
             if flog:
                 flog.write_line("------------"+str(stamp_to_date(t))+"------------")
@@ -145,7 +145,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     side_txt = "做多" if side == 'buy' else "做空"
                     side_color = "S" if side == 'buy' else "E"
                     fees_usd = pos * fees_limit
-                    print_log("【"+side_txt+":"+symbol+"@"+exchange+"】时间:"+stamp_to_date(t)+";价格:"+str(c)+";仓位:"+str(pos)+";ATR:"+str(round(ATRP,2))+"%;手续费:"+str(fees_usd),side_color)
+                    print_log("【"+side_txt+"】时间:"+stamp_to_date(t)+";价格:"+str(c)+";仓位:"+str(pos)+";ATR:"+str(round(ATRP,2))+"%;手续费:"+str(fees_usd),side_color)
                     amount = pos / c
                     order_dict = {
                             "exchange":exchange,
@@ -192,9 +192,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
                     if profit >= 0:
-                        print_log("【盈利退出】原始余额:"+str(final_balance)+";盈利金额:"+str(profit)+";最新余额:"+str(final_balance + profit),"S")
+                        print_log("【盈利退出】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+str(final_balance)+" --> "+str(final_balance + profit),"S")
                     else:
-                        print_log("【亏损退出】原始余额:"+str(final_balance)+";亏损金额:"+str(abs(profit))+";最新余额:"+str(final_balance + profit),"E")
+                        print_log("【亏损退出】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+str(final_balance)+" --> "+str(final_balance + profit),"E")
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
                     #print_log("时间"+ stamp_to_date(last_ts) +";余额:"+str(final_balance),"I")
@@ -208,6 +208,6 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             for order in remove_list:
                 order_list.remove(order)
             
-        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";余额:"+str(final_balance)+"             ","I",'\r')
+        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+str(round(ATRP,2))+"%;余额:"+str(final_balance)+"               ","I",'\r')
         time.sleep(float(param['-sleep']) if '-sleep' in param else 2.0)
     return final_balance, last_ts
