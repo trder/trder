@@ -30,7 +30,7 @@ P0平台不支持训练AI（P1平台），也没有实盘交易功能（P2平台
 
 ## 创建交易系统
 
-在trder目录下(与trder.py同级的目录)，创建`trade_交易系统名`文件夹。如`trade_donchian`。
+在trder目录下(与trder.py同级的目录)，创建`trade_交易系统名`文件夹。如`trade_唐奇安趋势系统`。
 
 在文件夹下创建文件`trading.py`,示例代码如下。
 
@@ -136,7 +136,7 @@ def exit_signal(order) -> tuple:
         etype = 0
     return exit_sign, etype
 ```
-更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_donchian/trading.py)。
+更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_唐奇安趋势系统/trading.py)。
 
 ## 测试量化交易系统
 
@@ -148,7 +148,7 @@ def exit_signal(order) -> tuple:
 
 > cd trder
 > 
-> python eval.py donchian
+> python eval.py 唐奇安趋势系统
 
 ## 可选参数
 
@@ -168,7 +168,7 @@ def exit_signal(order) -> tuple:
 
 > cd trder
 > 
-> python run.py donchian
+> python run.py 唐奇安趋势系统
 
 ## 自顶而下的构造
 

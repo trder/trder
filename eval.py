@@ -1,11 +1,13 @@
 #量化交易平台P0
 #启动模拟交易
-#指令：python eval.py donchian
+#指令：python eval.py 唐奇安趋势系统
 import sys
+import os
 from lib.trder_core import *
 from lib.trder_log import *
 
 if __name__ == '__main__':
+    os.system("title [模拟交易]github.com/trder/trder/releases/tag/P0-4")
     #获取参数个数
     n_argv = len(sys.argv)
     if n_argv < 2:
