@@ -15,7 +15,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     '''
     final_balance, last_ts = init_balance, since
     #code,kline_1d = read_klines_all(exchange,symbol,"1d",last_ts)
-    #print_log("日线周期["+stamp_to_date(kline_1d[0][0])+"~"+stamp_to_date(kline_1d[-1][0])+"],条目数："+str(len(kline_1d)),'I')
+    #print_log("日线周期["+stamp_to_date(kline_1d[0][0])+"~"+stamp_to_date(kline_1d[-1][0])+"],条目数:"+str(len(kline_1d)),'I')
     #code,atr14d = atr_from_1d(kline_1d,14)
     #if code == 200:
     #    print_log("ATR转化成功！","S")
@@ -141,11 +141,11 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
-                    #print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")
+                    #print_log("时间"+ stamp_to_date(last_ts) +";余额:"+str(final_balance),"I")
                     side_txt = "做多" if side == 'buy' else "做空"
                     side_color = "S" if side == 'buy' else "E"
-                    print_log("【"+side_txt+"】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(pos),side_color)
                     fees_usd = pos * fees_limit
+                    print_log("【"+side_txt+":"+symbol+"@"+exchange+"】时间:"+stamp_to_date(t)+";价格:"+str(c)+";仓位:"+str(pos)+";ATR:"+str(round(ATRP,2))+"%;手续费:"+str(fees_usd),side_color)
                     amount = pos / c
                     order_dict = {
                             "exchange":exchange,
@@ -181,9 +181,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 exit_sign, etype = exit_signal_func(SimpleNamespace(**order))
                 #process_exit
                 #exit_sign 退出信号强度（介于[0,1]之间）
-                #etype 退出类型：0信号退出 1止损退出
+                #etype 退出类型:0信号退出 1止损退出
                 if exit_sign:
-                    #print_log("【订单退出】时间："+stamp_to_date(t)+"；交易所："+exchange+"；币种："+symbol+"；方向："+side+"；仓位："+str(order["current_position"]),"E")
+                    #print_log("【订单退出】时间:"+stamp_to_date(t)+";交易所:"+exchange+";币种:"+symbol+";方向:"+side+";仓位:"+str(order["current_position"]),"E")
                     remove_list.append(order)
                     fees = fees_limit if etype == 0 else fees_market
                     profit = 0
@@ -192,12 +192,12 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
                     if profit >= 0:
-                        print_log("【盈利退出】原始余额："+str(final_balance)+"；盈利金额："+str(profit)+"；最新余额："+str(final_balance + profit),"S")
+                        print_log("【盈利退出】原始余额:"+str(final_balance)+";盈利金额:"+str(profit)+";最新余额:"+str(final_balance + profit),"S")
                     else:
-                        print_log("【亏损退出】原始余额："+str(final_balance)+"；亏损金额："+str(abs(profit))+"；最新余额："+str(final_balance + profit),"E")
+                        print_log("【亏损退出】原始余额:"+str(final_balance)+";亏损金额:"+str(abs(profit))+";最新余额:"+str(final_balance + profit),"E")
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
-                    #print_log("时间"+ stamp_to_date(last_ts) +";余额："+str(final_balance),"I")
+                    #print_log("时间"+ stamp_to_date(last_ts) +";余额:"+str(final_balance),"I")
                     if final_balance <= 0:
                         return final_balance, t
                 else:
@@ -208,6 +208,6 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             for order in remove_list:
                 order_list.remove(order)
             
-        print_log("时间："+ stamp_to_date(last_ts) +"；价格："+str(c)+"；余额："+str(final_balance)+"             ","I",'\r')
+        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";余额:"+str(final_balance)+"             ","I",'\r')
         time.sleep(float(param['-sleep']) if '-sleep' in param else 2.0)
     return final_balance, last_ts
