@@ -21,9 +21,10 @@ def print_log(s,t,end='\n'):
         W警告
         I提示
     '''
-    tm = datetime.datetime.now()
+    #tm = datetime.datetime.now()
     color_tm = color_map["tm"]
     color_s = color_map[t]
     color_end = color_map["end"]
     #print(f"{color_tm}{tm}:{color_end}{color_s}{s}{color_end}",end=end)
-    print(f"[{t}]{tm}:{s}",end=end)
+    #print(f"[{t}]{tm}:{s}",end=end)
+    print(f"[{t}]{s}",end=end)
