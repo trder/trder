@@ -8,13 +8,13 @@
 
 ## P0平台
 
+P0平台只支持单个市场的模拟交易。
+
 P0平台是trder量化交易平台的一个精简版内核(总共只包含不到一千行代码)，是trder平台的第一个里程碑。
 
-P0平台是最小化的量化交易平台，只包含必要的最小化功能。它是第一个要实现的功能，也是整个平台最基础的部分。
+P0平台是最小化的量化交易平台，只包含必要的最小化功能，它是整个量化平台最基础的部分。
 
-P0平台没有实盘交易功能，也不能训练AI。它不调用AI纪元的服务器，也没有本地数据库。它只支持binance平台的BTC/USD一个市场的模拟交易，且模拟参数都是固定的。
-
-只支持简化版的唐奇安趋势系统。
+P0平台不支持训练AI（P1平台），也没有实盘交易功能（P2平台）。
 
 ## 下载
 
@@ -138,7 +138,7 @@ def exit_signal(order) -> tuple:
 ```
 更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_donchian/trading.py)。
 
-## 测试量化交易系统(不输出日志)
+## 测试量化交易系统
 
 > cd trder
 > 
@@ -150,17 +150,13 @@ def exit_signal(order) -> tuple:
 > 
 > python eval.py donchian
 
-## 测试量化交易系统(输出日志)
+## 可选参数
 
-> cd trder
-> 
-> python eval.py 交易系统名 -o eval_log.txt
-
-如:
-
-> cd trder
-> 
-> python eval.py donchian -o log.txt
+> -log 日志路径 默认不记录日志
+> -sleep 抓取k线间隔（秒） 默认2秒
+> -since 模拟起始时间戳（秒） 默认一年前
+> -exchange 交易所 默认binance
+> -symbol 市场 默认BTC/USDT
 
 ## 运行量化交易系统
 
@@ -187,4 +183,4 @@ trder的开发风格是先调用，再实现，自顶而下实现整个量化平
 
 by AI纪元
 
-2022-05-15
+2022-05-23

@@ -34,7 +34,10 @@ def eval_trading_system(trading_system_name,param):
     '''
     评估交易系统
     '''
-    init_balance, since, exchange, symbol = 1000.0, last_year(), "binance", "BTC/USDT"
+    since = int(param['-since'])*1000 if '-since' in param else last_year()
+    exchange = str(param['-exchange']) if '-exchange' in param else "binance"
+    symbol = str(param['-symbol']) if '-symbol' in param else "BTC/USDT"
+    init_balance = 1000.0
     print_log("模拟交易：交易所" + exchange + "；市场" + symbol,"I")
     print_log("初始余额"+str(init_balance)+"，开始时间"+stamp_to_date(since),"I")
     final_balance, last_ts = simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param)

@@ -25,7 +25,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     HQ10,LQ10 = [],[]
     HQ20,LQ20 = [],[]
     HQ55,LQ55 = [],[]
-    flog = log_file(param['-o']) if '-o' in param else None
+    flog = log_file(param['-log']) if '-log' in param else None
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
@@ -41,10 +41,11 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     ATRdq = deque()
     trder.set_MARGIN(final_balance)
     trder.set_TOTAL_POS(0)
+    t = last_ts
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
-            return final_balance, last_ts
+            return final_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
             exp10 = t + expire10
@@ -208,5 +209,5 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 order_list.remove(order)
             
         print_log("时间："+ stamp_to_date(last_ts) +"；价格："+str(c)+"；余额："+str(final_balance)+"             ","I",'\r')
-        time.sleep(0.5)
+        time.sleep(float(param['-sleep']) if '-sleep' in param else 2.0)
     return final_balance, last_ts
