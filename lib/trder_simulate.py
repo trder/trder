@@ -46,6 +46,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
             return final_balance, t
+        if last_ts >= last_3days():
+            return final_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
             exp10 = t + expire10
