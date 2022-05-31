@@ -14,6 +14,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     评估交易系统(单市场)
     '''
     final_balance, last_ts = init_balance, since
+    floating_balance = final_balance
     #code,kline_1d = read_klines_all(exchange,symbol,"1d",last_ts)
     #print_log("日线周期["+stamp_to_date(kline_1d[0][0])+"~"+stamp_to_date(kline_1d[-1][0])+"],条目数:"+str(len(kline_1d)),'I')
     #code,atr14d = atr_from_1d(kline_1d,14)
@@ -45,7 +46,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
-            return final_balance, t
+            return floating_balance, t
         if last_ts >= last_3days():
             return final_balance, t
         for t,o,h,l,c,v in kline_1m:
@@ -172,6 +173,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     trder.set_MARGIN(final_balance)
             remove_list = []
             tot_pos = 0
+            floating_profit = 0
             for order in order_list:
                 #if order["exchange"] == exchange and order["symbol"] == symbol:
                 order["current_price"] = c
@@ -203,13 +205,19 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     if final_balance <= 0:
                         return final_balance, t
                 else:
+                    profit = 0
+                    if order["side"] == 'buy':
+                        profit = order["current_position"]*(1-fees)-order["entry_position"]
+                    elif order["side"] == 'sell':
+                        profit = order["entry_position"] - order["current_position"]*(1+fees)
+                    floating_profit+=profit
                     tot_pos+=order["current_position"]
 
+            floating_balance = final_balance + floating_profit
             trder.set_TOTAL_POS(tot_pos)
 
             for order in remove_list:
                 order_list.remove(order)
             
-        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+format(ATRP,'.4g')+"%;L20:"+format(L20,'.6g')+";L10:"+format(L10,'.6g')+";H10:"+format(H10,'.6g')+";H20:"+format(H20,'.6g')+"               ","I",'\r')
+        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+format(ATRP,'.4g')+"%;余额估算:"+format(floating_balance,'.6g')+"                                     ","I",'\r')
         time.sleep(float(param['-sleep']) if '-sleep' in param else 2.0)
-    return final_balance, last_ts

@@ -7,7 +7,7 @@ from lib.trder_core import *
 from lib.trder_log import *
 
 if __name__ == '__main__':
-    os.system("title [模拟交易]github.com/trder/trder/releases/tag/P0-6")
+    os.system("title [模拟交易]github.com/trder/trder/releases/tag/P0-7")
     #获取参数个数
     n_argv = len(sys.argv)
     if n_argv < 2:
