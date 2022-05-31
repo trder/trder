@@ -205,6 +205,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     if final_balance <= 0:
                         return final_balance, t
                 else:
+                    fees = fees_market
                     profit = 0
                     if order["side"] == 'buy':
                         profit = order["current_position"]*(1-fees)-order["entry_position"]
