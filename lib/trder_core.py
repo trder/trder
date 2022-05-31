@@ -40,7 +40,7 @@ def eval_trading_system(trading_system_name,param):
     init_balance = 1000.0
     tm = datetime.datetime.now()
     print_log("交易所:" + exchange + ";市场:" + symbol,"I")
-    print_log("初始余额:"+str(init_balance)+";开始时间:"+stamp_to_date(since),"I")
+    print_log("初始余额:"+str(init_balance)+";开始时间:"+stamp_to_date(since)+" UTC","I")
     print_log("系统时间:"+str(tm),"I")
     final_balance, last_ts = simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param)
     tm = datetime.datetime.now()
