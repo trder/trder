@@ -43,6 +43,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     trder.set_MARGIN(final_balance)
     trder.set_TOTAL_POS(0)
     t = last_ts
+    trade_count = 0
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts)
         if code != 200:
@@ -144,6 +145,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
                 if sign > 0:
+                    trade_count += 1
                     #print_log("时间"+ stamp_to_date(last_ts) +";余额:"+str(final_balance),"I")
                     side_txt = "做多" if side == 'buy' else "做空"
                     side_color = "S" if side == 'buy' else "E"
@@ -220,5 +222,5 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             for order in remove_list:
                 order_list.remove(order)
             
-        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+format(ATRP,'.4g')+"%;余额估算:"+format(floating_balance,'.6g')+"                                     ","I",'\r')
+        print_log("时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+format(ATRP,'.4g')+"%;余额估算:"+format(floating_balance,'.6g')+";交易次数:"+str(trade_count)+"                            ","I",'\r')
         time.sleep(float(param['-sleep']) if '-sleep' in param else 2.0)
