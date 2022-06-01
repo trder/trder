@@ -5,7 +5,7 @@ def entry_signal(exchange,symbol) -> dict: #入市信号
   risk = 1.0
   if VARS["TOTAL_POS"] > 0:
     return None
-  pos = VARS["MARGIN"] * risk / ATRP20D[e,s]
+  pos = VARS["MARGIN"] * risk / ATRP10D[e,s]
   if DON4DBREAK[e,s] == 1:
     strategy = {
     "sign":1.0, #信号强度

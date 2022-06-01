@@ -23,7 +23,13 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     #else:
     #    return final_balance, last_ts
     source = load_source(trading_system_name)
-    
+    DON2DBREAK_on = 'DON2DBREAK' in source
+    DON4DBREAK_on = 'DON4DBREAK' in source
+    DON5DBREAK_on = 'DON5DBREAK' in source
+    DON10DBREAK_on = 'DON10DBREAK' in source
+    DON20DBREAK_on = 'DON20DBREAK' in source
+    DON55DBREAK_on = 'DON55DBREAK' in source
+    ATRP10D_on = 'ATRP10D' in source
     order_list = []
     HQ2,LQ2 = [],[]
     HQ4,LQ4 = [],[]
@@ -49,7 +55,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     H10,L10=-inf,inf
     H20,L20=-inf,inf
     H55,L55=-inf,inf
-    ATRN,ATRL,ATRS = 20,-1,0
+    ATRN,ATRL,ATRS = 10,-1,0
     ATRdq = deque()
     trder.set_MARGIN(final_balance)
     trder.set_TOTAL_POS(0)
@@ -63,102 +69,108 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             return final_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
-            exp2 = t + expire2
-            exp4 = t + expire4
-            exp5 = t + expire5
-            exp10 = t + expire10
-            exp20 = t + expire20
-            exp55 = t + expire55
-            heappush(HQ2,(-h,exp2))
-            heappush(LQ2,(l,exp2))
-            heappush(HQ4,(-h,exp4))
-            heappush(LQ4,(l,exp4))
-            heappush(HQ5,(-h,exp5))
-            heappush(LQ5,(l,exp5))
-            heappush(HQ10,(-h,exp10))
-            heappush(LQ10,(l,exp10))
-            heappush(HQ20,(-h,exp20))
-            heappush(LQ20,(l,exp20))
-            heappush(HQ55,(-h,exp55))
-            heappush(LQ55,(l,exp55))
-            while HQ2[0][1] <= t:
-                heappop(HQ2)
-            while LQ2[0][1] <= t:
-                heappop(LQ2)
-            while HQ4[0][1] <= t:
-                heappop(HQ4)
-            while LQ4[0][1] <= t:
-                heappop(LQ4)
-            while HQ5[0][1] <= t:
-                heappop(HQ5)
-            while LQ5[0][1] <= t:
-                heappop(LQ5)
-            while HQ10[0][1] <= t:
-                heappop(HQ10)
-            while LQ10[0][1] <= t:
-                heappop(LQ10)
-            while HQ20[0][1] <= t:
-                heappop(HQ20)
-            while LQ20[0][1] <= t:
-                heappop(LQ20)
-            while HQ55[0][1] <= t:
-                heappop(HQ55)
-            while LQ55[0][1] <= t:
-                heappop(LQ55)
-            H2N,L2N = -HQ2[0][0],LQ2[0][0]
-            H4N,L4N = -HQ4[0][0],LQ4[0][0]
-            H5N,L5N = -HQ5[0][0],LQ5[0][0]
-            H10N,L10N = -HQ10[0][0],LQ10[0][0]
-            H20N,L20N = -HQ20[0][0],LQ20[0][0]
-            H55N,L55N = -HQ55[0][0],LQ55[0][0]
-            if H2N > H2:
-                #donbreak
-                trder.set_DON2DBREAK(exchange, symbol, 1)
-            elif L2N < L2:
-                trder.set_DON2DBREAK(exchange, symbol, -1)
-            else:
-                trder.set_DON2DBREAK(exchange, symbol, 0)
-            if H4N > H4:
-                #donbreak
-                trder.set_DON4DBREAK(exchange, symbol, 1)
-            elif L4N < L4:
-                trder.set_DON4DBREAK(exchange, symbol, -1)
-            else:
-                trder.set_DON4DBREAK(exchange, symbol, 0)
-            if H5N > H5:
-                #donbreak
-                trder.set_DON5DBREAK(exchange, symbol, 1)
-            elif L5N < L5:
-                trder.set_DON5DBREAK(exchange, symbol, -1)
-            else:
-                trder.set_DON5DBREAK(exchange, symbol, 0)
-            if H10N > H10:
-                #donbreak
-                trder.set_DON10DBREAK(exchange, symbol, 1)
-            elif L10N < L10:
-                trder.set_DON10DBREAK(exchange, symbol, -1)
-            else:
-                trder.set_DON10DBREAK(exchange, symbol, 0)
-            if H20N > H20:
-                #donbreak
-                trder.set_DON20DBREAK(exchange, symbol, 1)
-            elif L20N < L20:
-                trder.set_DON20DBREAK(exchange, symbol, -1)
-            else:
-                trder.set_DON20DBREAK(exchange, symbol, 0)
-            if H55N > H55:
-                #donbreak
-                trder.set_DON55DBREAK(exchange, symbol, 1)
-            elif L55N < L55:
-                trder.set_DON55DBREAK(exchange, symbol, -1)
-            else:
-                trder.set_DON55DBREAK(exchange, symbol, 0)
-            H2,L2 = H2N,L2N
-            H4,L4 = H4N,L4N
-            H5,L5 = H5N,L5N
-            H10,L10 = H10N,L10N
-            H20,L20 = H20N,L20N
-            H55,L55 = H55N,L55N
+            if DON2DBREAK_on:
+                exp2 = t + expire2
+                heappush(HQ2,(-h,exp2))
+                heappush(LQ2,(l,exp2))
+                while HQ2[0][1] <= t:
+                    heappop(HQ2)
+                while LQ2[0][1] <= t:
+                    heappop(LQ2)
+                H2N,L2N = -HQ2[0][0],LQ2[0][0]
+                if H2N > H2:
+                    #donbreak
+                    trder.set_DON2DBREAK(exchange, symbol, 1)
+                elif L2N < L2:
+                    trder.set_DON2DBREAK(exchange, symbol, -1)
+                else:
+                    trder.set_DON2DBREAK(exchange, symbol, 0)
+                H2,L2 = H2N,L2N
+            if DON4DBREAK_on:
+                exp4 = t + expire4
+                heappush(HQ4,(-h,exp4))
+                heappush(LQ4,(l,exp4))
+                while HQ4[0][1] <= t:
+                    heappop(HQ4)
+                while LQ4[0][1] <= t:
+                    heappop(LQ4)
+                H4N,L4N = -HQ4[0][0],LQ4[0][0]
+                if H4N > H4:
+                    #donbreak
+                    trder.set_DON4DBREAK(exchange, symbol, 1)
+                elif L4N < L4:
+                    trder.set_DON4DBREAK(exchange, symbol, -1)
+                else:
+                    trder.set_DON4DBREAK(exchange, symbol, 0)
+                H4,L4 = H4N,L4N
+            if DON5DBREAK_on:
+                exp5 = t + expire5
+                heappush(HQ5,(-h,exp5))
+                heappush(LQ5,(l,exp5))
+                while HQ5[0][1] <= t:
+                    heappop(HQ5)
+                while LQ5[0][1] <= t:
+                    heappop(LQ5)
+                H5N,L5N = -HQ5[0][0],LQ5[0][0]
+                if H5N > H5:
+                    #donbreak
+                    trder.set_DON5DBREAK(exchange, symbol, 1)
+                elif L5N < L5:
+                    trder.set_DON5DBREAK(exchange, symbol, -1)
+                else:
+                    trder.set_DON5DBREAK(exchange, symbol, 0)
+                H5,L5 = H5N,L5N
+            if DON10DBREAK_on:
+                exp10 = t + expire10
+                heappush(HQ10,(-h,exp10))
+                heappush(LQ10,(l,exp10))
+                while HQ10[0][1] <= t:
+                    heappop(HQ10)
+                while LQ10[0][1] <= t:
+                    heappop(LQ10)
+                H10N,L10N = -HQ10[0][0],LQ10[0][0]
+                if H10N > H10:
+                    #donbreak
+                    trder.set_DON10DBREAK(exchange, symbol, 1)
+                elif L10N < L10:
+                    trder.set_DON10DBREAK(exchange, symbol, -1)
+                else:
+                    trder.set_DON10DBREAK(exchange, symbol, 0)
+                H10,L10 = H10N,L10N
+            if DON20DBREAK_on:
+                exp20 = t + expire20
+                heappush(HQ20,(-h,exp20))
+                heappush(LQ20,(l,exp20))
+                while HQ20[0][1] <= t:
+                    heappop(HQ20)
+                while LQ20[0][1] <= t:
+                    heappop(LQ20)
+                H20N,L20N = -HQ20[0][0],LQ20[0][0]
+                if H20N > H20:
+                    #donbreak
+                    trder.set_DON20DBREAK(exchange, symbol, 1)
+                elif L20N < L20:
+                    trder.set_DON20DBREAK(exchange, symbol, -1)
+                else:
+                    trder.set_DON20DBREAK(exchange, symbol, 0)
+                H20,L20 = H20N,L20N
+            if DON55DBREAK_on:
+                exp55 = t + expire55
+                heappush(HQ55,(-h,exp55))
+                heappush(LQ55,(l,exp55))
+                while HQ55[0][1] <= t:
+                    heappop(HQ55)
+                while LQ55[0][1] <= t:
+                    heappop(LQ55)
+                H55N,L55N = -HQ55[0][0],LQ55[0][0]
+                if H55N > H55:
+                    #donbreak
+                    trder.set_DON55DBREAK(exchange, symbol, 1)
+                elif L55N < L55:
+                    trder.set_DON55DBREAK(exchange, symbol, -1)
+                else:
+                    trder.set_DON55DBREAK(exchange, symbol, 0)
+                H55,L55 = H55N,L55N
             last_day = t - daymins
             #ATR
             if not ATRdq or ATRdq[-1][0] <= last_day:
@@ -184,14 +196,14 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 continue
             if ATRL < ATRN:
                 continue
-            trder.set_ATRP20D(exchange,symbol,ATRP)
+            trder.set_ATRP10D(exchange,symbol,ATRP)
             if flog:
                 flog.write_line("------------"+str(stamp_to_date(t))+"------------")
                 flog.write_line("o:"+str(o)+";h:"+str(h)+";l:"+str(l)+";c:"+str(c))
                 flog.write_line("TOTAL_POS:"+str(trder.TOTAL_POS))
                 flog.write_line("MARGIN:"+str(trder.MARGIN))
                 flog.write_line("VARS:"+str(trder.VARS))
-                flog.write_line("ATRP20D:"+str(trder.ATRP20D))
+                flog.write_line("ATRP10D:"+str(trder.ATRP10D))
                 flog.write_line("H10:"+str(H10)+";L10:"+str(L10)+";exp10:"+str(exp10))
                 flog.write_line("DON10DBREAK:"+str(trder.DON10DBREAK))
                 flog.write_line("H20:"+str(H20)+";L20:"+str(L20)+";exp20:"+str(exp20))
