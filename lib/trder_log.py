@@ -2,6 +2,10 @@ import datetime
 import lib.trder_bcolors
 
 color_map = {
+    "+":lib.trder_bcolors.CBLUEBG2,
+    "-":lib.trder_bcolors.CREDBG2,
+    "↑":lib.trder_bcolors.CBLUEBG2,
+    "↓":lib.trder_bcolors.CREDBG2,
     "S":lib.trder_bcolors.CBLUEBG2,
     "E":lib.trder_bcolors.CREDBG2,
     "W":lib.trder_bcolors.CYELLOWBG2,
@@ -22,9 +26,9 @@ def print_log(s,t,end='\n'):
         I提示
     '''
     #tm = datetime.datetime.now()
-    color_tm = color_map["tm"]
-    color_s = color_map[t]
-    color_end = color_map["end"]
+    #color_tm = color_map["tm"]
+    #color_s = color_map[t]
+    #color_end = color_map["end"]
     #print(f"{color_tm}{tm}:{color_end}{color_s}{s}{color_end}",end=end)
     #print(f"[{t}]{tm}:{s}",end=end)
     print(f"[{t}]{s}",end=end)
