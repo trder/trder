@@ -4,6 +4,7 @@ VARS = {}
 ATRP20D = {} 
 MA25D = {}
 MA350D = {}
+DON5DBREAK = {}
 DON10DBREAK = {}
 DON20DBREAK = {}
 DON55DBREAK = {}
@@ -32,6 +33,12 @@ def set_MA25D(exchange,symbol,val):
 def set_MA350D(exchange,symbol,val):
     MA350D[exchange,symbol] = val
 
+def get_DON5DBREAK(exchange,symbol):
+    '''
+    是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
+    '''
+    return DON5DBREAK[exchange,symbol]
+
 def get_DON10DBREAK(exchange,symbol):
     '''
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
@@ -49,6 +56,12 @@ def get_DON55DBREAK(exchange,symbol):
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
     '''
     return DON55DBREAK[exchange,symbol]
+
+def set_DON5DBREAK(exchange,symbol,val):
+    '''
+    是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
+    '''
+    DON10DBREAK[exchange,symbol] = val
 
 def set_DON10DBREAK(exchange,symbol,val):
     '''

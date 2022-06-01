@@ -23,6 +23,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     #else:
     #    return final_balance, last_ts
     order_list = []
+    HQ5,LQ5 = [],[]
     HQ10,LQ10 = [],[]
     HQ20,LQ20 = [],[]
     HQ55,LQ55 = [],[]
@@ -32,9 +33,11 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
     daymins = 24 * 60 * 60 * 1000
+    expire5 = 5 * daymins
     expire10 = 10 * daymins
     expire20 = 20 * daymins
     expire55 = 55 * daymins
+    H5,L5=-inf,inf
     H10,L10=-inf,inf
     H20,L20=-inf,inf
     H55,L55=-inf,inf
@@ -52,15 +55,22 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             return final_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
+            exp5 = t + expire5
             exp10 = t + expire10
             exp20 = t + expire20
             exp55 = t + expire55
+            heappush(HQ5,(-h,exp5))
+            heappush(LQ5,(l,exp5))
             heappush(HQ10,(-h,exp10))
             heappush(LQ10,(l,exp10))
             heappush(HQ20,(-h,exp20))
             heappush(LQ20,(l,exp20))
             heappush(HQ55,(-h,exp55))
             heappush(LQ55,(l,exp55))
+            while HQ5[0][1] <= t:
+                heappop(HQ5)
+            while LQ5[0][1] <= t:
+                heappop(LQ5)
             while HQ10[0][1] <= t:
                 heappop(HQ10)
             while LQ10[0][1] <= t:
@@ -73,9 +83,17 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 heappop(HQ55)
             while LQ55[0][1] <= t:
                 heappop(LQ55)
+            H5N,L5N = -HQ5[0][0],LQ5[0][0]
             H10N,L10N = -HQ10[0][0],LQ10[0][0]
             H20N,L20N = -HQ20[0][0],LQ20[0][0]
             H55N,L55N = -HQ55[0][0],LQ55[0][0]
+            if H5N > H5:
+                #donbreak
+                trder.set_DON5DBREAK(exchange, symbol, 1)
+            elif L5N < L5:
+                trder.set_DON5DBREAK(exchange, symbol, -1)
+            else:
+                trder.set_DON5DBREAK(exchange, symbol, 0)
             if H10N > H10:
                 #donbreak
                 trder.set_DON10DBREAK(exchange, symbol, 1)
@@ -97,6 +115,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 trder.set_DON55DBREAK(exchange, symbol, -1)
             else:
                 trder.set_DON55DBREAK(exchange, symbol, 0)
+            H5,L5 = H5N,L5N
             H10,L10 = H10N,L10N
             H20,L20 = H20N,L20N
             H55,L55 = H55N,L55N
