@@ -61,7 +61,7 @@ def set_DON5DBREAK(exchange,symbol,val):
     '''
     是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
     '''
-    DON10DBREAK[exchange,symbol] = val
+    DON5DBREAK[exchange,symbol] = val
 
 def set_DON10DBREAK(exchange,symbol,val):
     '''
