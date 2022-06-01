@@ -22,7 +22,11 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     #    print_log("ATR转化成功！","S")
     #else:
     #    return final_balance, last_ts
+    source = load_source(trading_system_name)
+    
     order_list = []
+    HQ2,LQ2 = [],[]
+    HQ4,LQ4 = [],[]
     HQ5,LQ5 = [],[]
     HQ10,LQ10 = [],[]
     HQ20,LQ20 = [],[]
@@ -33,10 +37,14 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
     daymins = 24 * 60 * 60 * 1000
+    expire2 = 2 * daymins
+    expire4 = 4 * daymins
     expire5 = 5 * daymins
     expire10 = 10 * daymins
     expire20 = 20 * daymins
     expire55 = 55 * daymins
+    H2,L2=-inf,inf
+    H4,L4=-inf,inf
     H5,L5=-inf,inf
     H10,L10=-inf,inf
     H20,L20=-inf,inf
@@ -55,10 +63,16 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             return final_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
+            exp2 = t + expire2
+            exp4 = t + expire4
             exp5 = t + expire5
             exp10 = t + expire10
             exp20 = t + expire20
             exp55 = t + expire55
+            heappush(HQ2,(-h,exp2))
+            heappush(LQ2,(l,exp2))
+            heappush(HQ4,(-h,exp4))
+            heappush(LQ4,(l,exp4))
             heappush(HQ5,(-h,exp5))
             heappush(LQ5,(l,exp5))
             heappush(HQ10,(-h,exp10))
@@ -67,6 +81,14 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             heappush(LQ20,(l,exp20))
             heappush(HQ55,(-h,exp55))
             heappush(LQ55,(l,exp55))
+            while HQ2[0][1] <= t:
+                heappop(HQ2)
+            while LQ2[0][1] <= t:
+                heappop(LQ2)
+            while HQ4[0][1] <= t:
+                heappop(HQ4)
+            while LQ4[0][1] <= t:
+                heappop(LQ4)
             while HQ5[0][1] <= t:
                 heappop(HQ5)
             while LQ5[0][1] <= t:
@@ -83,10 +105,26 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 heappop(HQ55)
             while LQ55[0][1] <= t:
                 heappop(LQ55)
+            H2N,L2N = -HQ2[0][0],LQ2[0][0]
+            H4N,L4N = -HQ4[0][0],LQ4[0][0]
             H5N,L5N = -HQ5[0][0],LQ5[0][0]
             H10N,L10N = -HQ10[0][0],LQ10[0][0]
             H20N,L20N = -HQ20[0][0],LQ20[0][0]
             H55N,L55N = -HQ55[0][0],LQ55[0][0]
+            if H2N > H2:
+                #donbreak
+                trder.set_DON2DBREAK(exchange, symbol, 1)
+            elif L2N < L2:
+                trder.set_DON2DBREAK(exchange, symbol, -1)
+            else:
+                trder.set_DON2DBREAK(exchange, symbol, 0)
+            if H4N > H4:
+                #donbreak
+                trder.set_DON4DBREAK(exchange, symbol, 1)
+            elif L4N < L4:
+                trder.set_DON4DBREAK(exchange, symbol, -1)
+            else:
+                trder.set_DON4DBREAK(exchange, symbol, 0)
             if H5N > H5:
                 #donbreak
                 trder.set_DON5DBREAK(exchange, symbol, 1)
@@ -115,6 +153,8 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 trder.set_DON55DBREAK(exchange, symbol, -1)
             else:
                 trder.set_DON55DBREAK(exchange, symbol, 0)
+            H2,L2 = H2N,L2N
+            H4,L4 = H4N,L4N
             H5,L5 = H5N,L5N
             H10,L10 = H10N,L10N
             H20,L20 = H20N,L20N
