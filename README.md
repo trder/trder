@@ -84,16 +84,16 @@ def entry_signal(exchange,symbol) -> dict:
   #print("MARGIN",VARS["MARGIN"],"ATRP",ATRP10D[e,s])
   pos = VARS["MARGIN"] * risk / ATRP10D[e,s]
   #简化版的系统不考虑MA过滤器
-  #if DON20DBREAK[e,s] == 1 and MA25D[e,s] > MA350D[e,s]:
-  if DON20DBREAK[e,s] == 1:
+  #if DONBREAK[20,e,s] == 1 and MA25D[e,s] > MA350D[e,s]:
+  if DONBREAK[20,e,s] == 1:
     strategy = {
     "sign":1.0, #信号强度
     "side":"buy", #方向：做多buy或做空sell
     "pos":pos #头寸大小：（以USD为单位）
     }
   #简化版的系统不考虑MA过滤器
-  #elif DON20DBREAK[e,s] == -1 and MA25D[e,s] < MA350D[e,s]:
-  elif DON20DBREAK[e,s] == -1:
+  #elif DONBREAK[20,e,s] == -1 and MA25D[e,s] < MA350D[e,s]:
+  elif DONBREAK[20,e,s] == -1:
     strategy = {
     "sign":1.0, #信号强度
     "side":"sell", #方向：做多buy或做空sell
@@ -137,14 +137,14 @@ def exit_signal(order) -> tuple:
       if order.current_price < order.entry_price / ( 1 + order.ATRP / 100 * 2 ):
         exit_sign = 1
         etype = 1
-      elif DON10DBREAK[e,s] == -1:
+      elif DONBREAK[10,e,s] == -1:
         exit_sign = 1
         etype = 0
     elif order.side == 'sell':
       if order.current_price > order.entry_price * ( 1 + order.ATRP / 100 * 2 ):
         exit_sign = 1
         etype = 1
-      elif DON10DBREAK[e,s] == 1:
+      elif DONBREAK[10,e,s] == 1:
         exit_sign = 1
         etype = 0
     return exit_sign, etype

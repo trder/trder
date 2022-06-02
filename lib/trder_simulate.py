@@ -4,9 +4,14 @@ from lib.trder_utils import *
 from types import SimpleNamespace
 import trder
 from lib.log_file import *
+from functools import *
+import re
 
 fees_limit = 0.001 #限价单手续费
 fees_market = 0.002 #市价单手续费
+
+DON_FROM = 1 #唐奇安通道（从）
+DON_TO = 100 #唐奇安通道（到）
 
 inf = float("inf")
 def simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param):
@@ -15,46 +20,30 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     '''
     final_balance, last_ts = init_balance, since
     floating_balance = final_balance
-    #code,kline_1d = read_klines_all(exchange,symbol,"1d",last_ts)
-    #print_log("日线周期["+stamp_to_date(kline_1d[0][0])+"~"+stamp_to_date(kline_1d[-1][0])+"],条目数:"+str(len(kline_1d)),'I')
-    #code,atr14d = atr_from_1d(kline_1d,14)
-    #if code == 200:
-    #    print_log("ATR转化成功！","S")
-    #else:
-    #    return final_balance, last_ts
     source = load_source(trading_system_name)
-    DON2DBREAK_on = 'DON2DBREAK' in source
-    DON4DBREAK_on = 'DON4DBREAK' in source
-    DON5DBREAK_on = 'DON5DBREAK' in source
-    DON10DBREAK_on = 'DON10DBREAK' in source
-    DON20DBREAK_on = 'DON20DBREAK' in source
-    DON55DBREAK_on = 'DON55DBREAK' in source
+    #动态语法分析
+    #判断交易系统使用了哪些指标，动态计算这些指标
+    #print(source)
+    DON_LIST = []
+    for i in range(DON_FROM,DON_TO+1):
+        pat = r'DONBREAK\[\s*' + str(i) + r'\s*,'
+        #print(pat,re.search(pat,source))
+        if re.search(pat,source):
+            DON_LIST.append(i)
+    print("DON_BREAK:",DON_LIST)
     ATRP10D_on = 'ATRP10D' in source
     order_list = []
-    HQ2,LQ2 = [],[]
-    HQ4,LQ4 = [],[]
-    HQ5,LQ5 = [],[]
-    HQ10,LQ10 = [],[]
-    HQ20,LQ20 = [],[]
-    HQ55,LQ55 = [],[]
+    HQS,LQS = defaultdict(list),defaultdict(list)
     flog = log_file(param['-log']) if '-log' in param else None
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
     daymins = 24 * 60 * 60 * 1000
-    expire2 = 2 * daymins
-    expire4 = 4 * daymins
-    expire5 = 5 * daymins
-    expire10 = 10 * daymins
-    expire20 = 20 * daymins
-    expire55 = 55 * daymins
-    H2,L2=-inf,inf
-    H4,L4=-inf,inf
-    H5,L5=-inf,inf
-    H10,L10=-inf,inf
-    H20,L20=-inf,inf
-    H55,L55=-inf,inf
+    @cache
+    def expires(days):
+        return days * daymins
+    HS,LS = defaultdict(lambda : -inf),defaultdict(lambda : inf)
     ATRN,ATRL,ATRS = 10,-1,0
     ATRdq = deque()
     trder.set_MARGIN(final_balance)
@@ -66,111 +55,26 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
         if code != 200:
             return floating_balance, t
         if last_ts >= last_3days():
-            return final_balance, t
+            return floating_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
-            if DON2DBREAK_on:
-                exp2 = t + expire2
-                heappush(HQ2,(-h,exp2))
-                heappush(LQ2,(l,exp2))
-                while HQ2[0][1] <= t:
-                    heappop(HQ2)
-                while LQ2[0][1] <= t:
-                    heappop(LQ2)
-                H2N,L2N = -HQ2[0][0],LQ2[0][0]
-                if H2N > H2:
+            for DON_I in DON_LIST:
+                exp2 = t + expires(DON_I)
+                heappush(HQS[DON_I],(-h,exp2))
+                heappush(LQS[DON_I],(l,exp2))
+                while HQS[DON_I][0][1] <= t:
+                    heappop(HQS[DON_I])
+                while LQS[DON_I][0][1] <= t:
+                    heappop(LQS[DON_I])
+                HN,LN = -HQS[DON_I][0][0],LQS[DON_I][0][0]
+                if HN > HS[DON_I]:
                     #donbreak
-                    trder.set_DON2DBREAK(exchange, symbol, 1)
-                elif L2N < L2:
-                    trder.set_DON2DBREAK(exchange, symbol, -1)
+                    trder.set_DONBREAK(DON_I, exchange, symbol, 1)
+                elif LN < LS[DON_I]:
+                    trder.set_DONBREAK(DON_I, exchange, symbol, -1)
                 else:
-                    trder.set_DON2DBREAK(exchange, symbol, 0)
-                H2,L2 = H2N,L2N
-            if DON4DBREAK_on:
-                exp4 = t + expire4
-                heappush(HQ4,(-h,exp4))
-                heappush(LQ4,(l,exp4))
-                while HQ4[0][1] <= t:
-                    heappop(HQ4)
-                while LQ4[0][1] <= t:
-                    heappop(LQ4)
-                H4N,L4N = -HQ4[0][0],LQ4[0][0]
-                if H4N > H4:
-                    #donbreak
-                    trder.set_DON4DBREAK(exchange, symbol, 1)
-                elif L4N < L4:
-                    trder.set_DON4DBREAK(exchange, symbol, -1)
-                else:
-                    trder.set_DON4DBREAK(exchange, symbol, 0)
-                H4,L4 = H4N,L4N
-            if DON5DBREAK_on:
-                exp5 = t + expire5
-                heappush(HQ5,(-h,exp5))
-                heappush(LQ5,(l,exp5))
-                while HQ5[0][1] <= t:
-                    heappop(HQ5)
-                while LQ5[0][1] <= t:
-                    heappop(LQ5)
-                H5N,L5N = -HQ5[0][0],LQ5[0][0]
-                if H5N > H5:
-                    #donbreak
-                    trder.set_DON5DBREAK(exchange, symbol, 1)
-                elif L5N < L5:
-                    trder.set_DON5DBREAK(exchange, symbol, -1)
-                else:
-                    trder.set_DON5DBREAK(exchange, symbol, 0)
-                H5,L5 = H5N,L5N
-            if DON10DBREAK_on:
-                exp10 = t + expire10
-                heappush(HQ10,(-h,exp10))
-                heappush(LQ10,(l,exp10))
-                while HQ10[0][1] <= t:
-                    heappop(HQ10)
-                while LQ10[0][1] <= t:
-                    heappop(LQ10)
-                H10N,L10N = -HQ10[0][0],LQ10[0][0]
-                if H10N > H10:
-                    #donbreak
-                    trder.set_DON10DBREAK(exchange, symbol, 1)
-                elif L10N < L10:
-                    trder.set_DON10DBREAK(exchange, symbol, -1)
-                else:
-                    trder.set_DON10DBREAK(exchange, symbol, 0)
-                H10,L10 = H10N,L10N
-            if DON20DBREAK_on:
-                exp20 = t + expire20
-                heappush(HQ20,(-h,exp20))
-                heappush(LQ20,(l,exp20))
-                while HQ20[0][1] <= t:
-                    heappop(HQ20)
-                while LQ20[0][1] <= t:
-                    heappop(LQ20)
-                H20N,L20N = -HQ20[0][0],LQ20[0][0]
-                if H20N > H20:
-                    #donbreak
-                    trder.set_DON20DBREAK(exchange, symbol, 1)
-                elif L20N < L20:
-                    trder.set_DON20DBREAK(exchange, symbol, -1)
-                else:
-                    trder.set_DON20DBREAK(exchange, symbol, 0)
-                H20,L20 = H20N,L20N
-            if DON55DBREAK_on:
-                exp55 = t + expire55
-                heappush(HQ55,(-h,exp55))
-                heappush(LQ55,(l,exp55))
-                while HQ55[0][1] <= t:
-                    heappop(HQ55)
-                while LQ55[0][1] <= t:
-                    heappop(LQ55)
-                H55N,L55N = -HQ55[0][0],LQ55[0][0]
-                if H55N > H55:
-                    #donbreak
-                    trder.set_DON55DBREAK(exchange, symbol, 1)
-                elif L55N < L55:
-                    trder.set_DON55DBREAK(exchange, symbol, -1)
-                else:
-                    trder.set_DON55DBREAK(exchange, symbol, 0)
-                H55,L55 = H55N,L55N
+                    trder.set_DONBREAK(DON_I, exchange, symbol, 0)
+                HS[DON_I],LS[DON_I] = HN,LN
             last_day = t - daymins
             #ATR
             if not ATRdq or ATRdq[-1][0] <= last_day:
@@ -197,19 +101,6 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             if ATRL < ATRN:
                 continue
             trder.set_ATRP10D(exchange,symbol,ATRP)
-            if flog:
-                flog.write_line("------------"+str(stamp_to_date(t))+"------------")
-                flog.write_line("o:"+str(o)+";h:"+str(h)+";l:"+str(l)+";c:"+str(c))
-                flog.write_line("TOTAL_POS:"+str(trder.TOTAL_POS))
-                flog.write_line("MARGIN:"+str(trder.MARGIN))
-                flog.write_line("VARS:"+str(trder.VARS))
-                flog.write_line("ATRP10D:"+str(trder.ATRP10D))
-                flog.write_line("H10:"+str(H10)+";L10:"+str(L10)+";exp10:"+str(exp10))
-                flog.write_line("DON10DBREAK:"+str(trder.DON10DBREAK))
-                flog.write_line("H20:"+str(H20)+";L20:"+str(L20)+";exp20:"+str(exp20))
-                flog.write_line("DON20DBREAK:"+str(trder.DON20DBREAK))
-                flog.write_line("H55:"+str(H55)+";L55:"+str(L55)+";exp55:"+str(exp55))
-                flog.write_line("DON55DBREAK:"+str(trder.DON55DBREAK))
             #update_global_data
             strategy = entry_signal_func(exchange,symbol)
             #process_stategy
@@ -269,9 +160,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
                     if profit >= 0:
-                        print_log("【止盈】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","+")
+                        print_log(" 【止盈】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","+")
                     else:
-                        print_log("【止损】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","-")
+                        print_log(" 【止损】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","-")
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
                     #print_log("时间"+ stamp_to_date(last_ts) +";余额:"+str(final_balance),"I")
