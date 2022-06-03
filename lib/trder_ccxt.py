@@ -3,6 +3,7 @@ from time import sleep
 import ccxt
 from lib.trder_log import *
 from lib.trder_utils import *
+from lib.trder_cache import *
 import bisect
 
 def read_klines_all(exchange,symbol,intervals,since):
@@ -18,7 +19,11 @@ def read_klines_all(exchange,symbol,intervals,since):
             break
     return 200, ans
 
-def read_klines_once(exchange,symbol,intervals,since):
+def read_klines_once(exchange,symbol,intervals,since,param):
+    ohlcv_list,end_stamp = read_klines_cache(exchange,symbol,intervals,since)
+    if ohlcv_list:
+        return 200,ohlcv_list,end_stamp
+    time.sleep(float(param['-sleep']) if '-sleep' in param else 2.0)
     exchangeObj = getattr(ccxt, exchange, None)
     #print_log("正在读取K线数据("+intervals+")，起始时间：" + stamp_to_date(since),"I")
     try:
@@ -32,4 +37,5 @@ def read_klines_once(exchange,symbol,intervals,since):
         return 400,"K线数据为空。",-1
     end_stamp = int(ohlcv_list[-1][0])
     #print_log("K线数据("+intervals+")读取完毕，结束时间：" + stamp_to_date(end_stamp),"I")
+    write_klines_cache(exchange,symbol,intervals,since,ohlcv_list,end_stamp)
     return 200,ohlcv_list,end_stamp
