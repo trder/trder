@@ -102,7 +102,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                 continue
             trder.set_ATRP10D(exchange,symbol,ATRP)
             #update_global_data
-            strategy = entry_signal_func(exchange,symbol)
+            strategy = entry_signal_func(exchange,symbol,param)
             #process_stategy
             if strategy:
                 sign,side,pos = strategy["sign"],strategy["side"],strategy["pos"]
@@ -146,7 +146,7 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     order["best_price"] = max(order["best_price"],c)
                 elif order["side"] == 'sell':
                     order["best_price"] = min(order["best_price"],c)
-                exit_sign, etype = exit_signal_func(SimpleNamespace(**order))
+                exit_sign, etype = exit_signal_func(SimpleNamespace(**order),param)
                 #process_exit
                 #exit_sign 退出信号强度（介于[0,1]之间）
                 #etype 退出类型:0信号退出 1止损退出

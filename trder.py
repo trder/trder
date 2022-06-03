@@ -1,10 +1,9 @@
-TOTAL_POS = 0
-MARGIN = 0
-VARS = {}
-ATRP10D = {} 
+__VARS = {}
+ATRP10D = {}
 MA25D = {}
 MA350D = {}
-DONBREAK = {}
+__DONBREAK = {}
+__USED_DON = set()
 
 def get_ATRP10D(exchange,symbol):
     '''
@@ -30,20 +29,21 @@ def set_MA25D(exchange,symbol,val):
 def set_MA350D(exchange,symbol,val):
     MA350D[exchange,symbol] = val
 
-def get_DONBREAK(days,exchange,symbol):
-    return DONBREAK[days,exchange,symbol]
+def DONBREAK(days,exchange,symbol):
+    __USED_DON.add(days,exchange,symbol)
+    return __DONBREAK[days,exchange,symbol]
 
 def set_DONBREAK(days,exchange,symbol,val):
-    DONBREAK[days,exchange,symbol] = val
+    __DONBREAK[days,exchange,symbol] = val
 
-def get_TOTAL_POS():
-    return VARS["TOTAL_POS"]
+def TOTAL_POS():
+    return __VARS["TOTAL_POS"]
 
-def get_MARGIN():
-    return VARS["MARGIN"]
+def MARGIN():
+    return __VARS["MARGIN"]
 
 def set_TOTAL_POS(val):
-    VARS["TOTAL_POS"] = val
+    __VARS["TOTAL_POS"] = val
 
 def set_MARGIN(val):
-    VARS["MARGIN"] = val
+    __VARS["MARGIN"] = val
