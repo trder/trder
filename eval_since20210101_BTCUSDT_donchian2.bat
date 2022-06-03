@@ -1,2 +1,2 @@
-python eval.py donchian2 -since 1609430400 -symbol BTCUSDT
+python eval.py donchian -since 1609430400 -symbol BTCUSDT -dc1 10 -dc1 5
 pause

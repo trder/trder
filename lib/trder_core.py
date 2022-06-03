@@ -24,6 +24,8 @@ def check_trading_system(trading_system_name,param):
     if not file_exist(trading_system_path):
         return 400, "文件"+trading_system_path+"不存在！"
     trading_lib_name = dir_name+".trading"
+    if not func_exist(trading_lib_name,["trading","initialize"]):
+        return 400, "方法"+trading_lib_name+".initialize不存在！"
     if not func_exist(trading_lib_name,["trading","entry_signal"]):
         return 400, "方法"+trading_lib_name+".entry_signal不存在！"
     if not func_exist(trading_lib_name,["trading","exit_signal"]):

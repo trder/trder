@@ -24,21 +24,23 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     #动态语法分析
     #判断交易系统使用了哪些指标，动态计算这些指标
     #print(source)
-    DON_LIST = []
-    for i in range(DON_FROM,DON_TO+1):
-        pat = r'DONBREAK\[\s*' + str(i) + r'\s*,'
-        #print(pat,re.search(pat,source))
-        if re.search(pat,source):
-            DON_LIST.append(i)
-    print("DON_BREAK:",DON_LIST)
-    ATRP10D_on = 'ATRP10D' in source
+    # DON_LIST = []
+    # for i in range(DON_FROM,DON_TO+1):
+    #     pat = r'DONBREAK\[\s*' + str(i) + r'\s*,'
+    #     #print(pat,re.search(pat,source))
+    #     if re.search(pat,source):
+    #         DON_LIST.append(i)
+    # print("DON_BREAK:",DON_LIST)
+    #ATRP10D_on = 'ATRP10D' in source
     order_list = []
     HQS,LQS = defaultdict(list),defaultdict(list)
     flog = log_file(param['-log']) if '-log' in param else None
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
+    initialize_signal_func = get_func(trading_lib_name,["trading","initialize"])
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
+    initialize_signal_func() #交易系统初始化
     daymins = 24 * 60 * 60 * 1000
     @cache
     def expires(days):
@@ -58,23 +60,25 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             return floating_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
-            for DON_I in DON_LIST:
-                exp2 = t + expires(DON_I)
-                heappush(HQS[DON_I],(-h,exp2))
-                heappush(LQS[DON_I],(l,exp2))
-                while HQS[DON_I][0][1] <= t:
-                    heappop(HQS[DON_I])
-                while LQS[DON_I][0][1] <= t:
-                    heappop(LQS[DON_I])
-                HN,LN = -HQS[DON_I][0][0],LQS[DON_I][0][0]
-                if HN > HS[DON_I]:
-                    #donbreak
-                    trder.set_DONBREAK(DON_I, exchange, symbol, 1)
-                elif LN < LS[DON_I]:
-                    trder.set_DONBREAK(DON_I, exchange, symbol, -1)
-                else:
-                    trder.set_DONBREAK(DON_I, exchange, symbol, 0)
-                HS[DON_I],LS[DON_I] = HN,LN
+            #for DON_I in DON_LIST:
+            for DON_I,_exchange,_symbol in trder.USED_DON():
+                if _exchange == exchange and _symbol == symbol:
+                    exp2 = t + expires(DON_I)
+                    heappush(HQS[DON_I],(-h,exp2))
+                    heappush(LQS[DON_I],(l,exp2))
+                    while HQS[DON_I][0][1] <= t:
+                        heappop(HQS[DON_I])
+                    while LQS[DON_I][0][1] <= t:
+                        heappop(LQS[DON_I])
+                    HN,LN = -HQS[DON_I][0][0],LQS[DON_I][0][0]
+                    if HN > HS[DON_I]:
+                        #donbreak
+                        trder.set_DONBREAK(DON_I, exchange, symbol, 1)
+                    elif LN < LS[DON_I]:
+                        trder.set_DONBREAK(DON_I, exchange, symbol, -1)
+                    else:
+                        trder.set_DONBREAK(DON_I, exchange, symbol, 0)
+                    HS[DON_I],LS[DON_I] = HN,LN
             last_day = t - daymins
             #ATR
             if not ATRdq or ATRdq[-1][0] <= last_day:

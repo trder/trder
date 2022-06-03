@@ -1,2 +1,2 @@
-python eval.py donchian5 -since 1609430400 -symbol ETHUSDT
+python eval.py donchian -since 1609430400 -symbol ETHUSDT -dc1 4 -dc1 2
 pause
