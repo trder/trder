@@ -1,6 +1,9 @@
-__VARS = {}
-__ATRP = {}
-__DONBREAK = {}
+from email.policy import default
+from collections import *
+
+__VARS = defaultdict(int)
+__ATRP = defaultdict(int)
+__DONBREAK = defaultdict(int)
 __USED_VARS = set()
 __USED_ATRP = set()
 __USED_DON = set()
@@ -30,8 +33,9 @@ def set_MARGIN(val):
 
 def ATRP(days,exchange,symbol):
     ndays = int(days)
-    __USED_ATRP.add(ndays,exchange,symbol)
-    return __ATRP[ndays,exchange,symbol]
+    key = (ndays,exchange,symbol)
+    __USED_ATRP.add(key)
+    return __ATRP[key]
 
 def set_ATRP(days,exchange,symbol,val):
     ndays = int(days)
@@ -39,8 +43,9 @@ def set_ATRP(days,exchange,symbol,val):
 
 def DONBREAK(days,exchange,symbol):
     ndays = int(days)
-    __USED_DON.add(ndays,exchange,symbol)
-    return __DONBREAK[ndays,exchange,symbol]
+    key = (ndays,exchange,symbol)
+    __USED_DON.add(key)
+    return __DONBREAK[key]
 
 def set_DONBREAK(days,exchange,symbol,val):
     ndays = int(days)

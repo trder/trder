@@ -40,14 +40,13 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     initialize_signal_func = get_func(trading_lib_name,["trading","initialize"])
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
-    initialize_signal_func() #交易系统初始化
+    initialize_signal_func(exchange, symbol, param) #交易系统初始化
     daymins = 24 * 60 * 60 * 1000
     @cache
     def expires(days):
         return days * daymins
     HS,LS = defaultdict(lambda : -inf),defaultdict(lambda : inf)
-    ATRN,ATRL,ATRS = 10,-1,0
-    ATRdq = deque()
+    ATRdqS,ATRLS,ATRSS = defaultdict(deque),defaultdict(lambda :-1),defaultdict(lambda :0)
     trder.set_MARGIN(final_balance)
     trder.set_TOTAL_POS(0)
     t = last_ts
@@ -81,30 +80,31 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     HS[DON_I],LS[DON_I] = HN,LN
             last_day = t - daymins
             #ATR
-            if not ATRdq or ATRdq[-1][0] <= last_day:
-                if ATRdq:
-                    TR_L,TR_H = ATRdq[-1][1],ATRdq[-1][2]
-                    TR = (TR_H - TR_L) / TR_L * 100
-                    ATRS+=TR
-                ATRdq.append([t,l,h])
-                if ATRL == ATRN:
-                    _, LTR_L, LTR_H = ATRdq.popleft()
-                    LTR = (LTR_H - LTR_L) / LTR_L * 100
-                    ATRS-=LTR
+            for ATRN,_exchange,_symbol in trder.USED_ATRP():
+                if not ATRdqS[ATRN] or ATRdqS[ATRN][-1][0] <= last_day:
+                    if ATRdqS[ATRN]:
+                        TR_L,TR_H = ATRdqS[ATRN][-1][1],ATRdqS[ATRN][-1][2]
+                        TR = (TR_H - TR_L) / TR_L * 100
+                        ATRSS[ATRN]+=TR
+                    ATRdqS[ATRN].append([t,l,h])
+                    if ATRLS[ATRN] == ATRN:
+                        _, LTR_L, LTR_H = ATRdqS[ATRN].popleft()
+                        LTR = (LTR_H - LTR_L) / LTR_L * 100
+                        ATRSS[ATRN]-=LTR
+                    else:
+                        ATRLS[ATRN]+=1
                 else:
-                    ATRL+=1
-            else:
-                ATRdq[-1][1] = min(ATRdq[-1][1],l)
-                ATRdq[-1][2] = max(ATRdq[-1][2],h)
-            #ATR = SUM(TR) / CNT(TR)
-            if ATRL > 0:
-                ATRP = ATRS / ATRL
-            else:
-                ATRP = 0
+                    ATRdqS[ATRN][-1][1] = min(ATRdqS[ATRN][-1][1],l)
+                    ATRdqS[ATRN][-1][2] = max(ATRdqS[ATRN][-1][2],h)
+                #ATR = SUM(TR) / CNT(TR)
+                if ATRLS[ATRN] > 0:
+                    ATRP = ATRSS[ATRN] / ATRLS[ATRN]
+                else:
+                    ATRP = 0
+                    continue
+                trder.set_ATRP(ATRN,exchange,symbol,ATRP)
+            if ATRLS[ATRN] < ATRN:
                 continue
-            if ATRL < ATRN:
-                continue
-            trder.set_ATRP10D(exchange,symbol,ATRP)
             #update_global_data
             strategy = entry_signal_func(exchange,symbol,param)
             #process_stategy
