@@ -6,7 +6,7 @@ class log_file:
     def __init__(self,filename):
         log_file.check_log_dirs()
         self.file_path = 'log/'+filename
-        open(self.file_path, 'w').close()
+        open(self.file_path, 'w', encoding='utf-8').close()
 
     @staticmethod
     def check_log_dirs():
@@ -16,7 +16,7 @@ class log_file:
 
     def write_line(self,s):
         tm = datetime.datetime.now()
-        with open(self.file_path, 'a') as file:
+        with open(self.file_path, 'a', encoding='utf-8') as file:
             file.write("["+str(tm)+"]"+s+'\n')
     
     def append_filename(self,s):
@@ -28,7 +28,7 @@ class log_file:
         filename_new = '.'.join(file_list)
         os.rename(self.file_path,filename_new)
         self.file_path = filename_new
-        
+
     @staticmethod
     def generate_filename(info):
         '''
