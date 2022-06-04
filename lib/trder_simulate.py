@@ -6,6 +6,7 @@ import trder
 from lib.log_file import *
 from functools import *
 import re
+from functools import reduce
 
 fees_limit = 0.001 #限价单手续费
 fees_market = 0.002 #市价单手续费
@@ -34,7 +35,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     #ATRP10D_on = 'ATRP10D' in source
     order_list = []
     HQS,LQS = defaultdict(list),defaultdict(list)
-    flog = log_file(param['-log']) if '-log' in param else None
+    #flog = log_file(param['-log']) if '-log' in param else None
+    logname = log_file.generate_filename((trading_system_name,)+reduce(lambda a,b:a+b,param.items()))
+    logfile = log_file(logname)
     dir_name = "trade_"+trading_system_name
     trading_lib_name = dir_name+".trading"
     initialize_signal_func = get_func(trading_lib_name,["trading","initialize"])
@@ -53,9 +56,10 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     trade_count = 0
     while True:
         code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts,param)
-        if code != 200:
-            return floating_balance, t
-        if last_ts >= last_3days():
+        if code != 200 or last_ts >= last_3days():
+            logtext = "时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+format(ATRP,'.4g')+"%;余额估算:"+format(floating_balance,'.6g')+";交易次数:"+str(trade_count)
+            logfile.write_line(logtext)
+            logfile.append_filename("_score_"+format(floating_balance,'.6g'))
             return floating_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
@@ -116,7 +120,9 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     side_txt = "做多" if side == 'buy' else "做空"
                     side_color = "↑" if side == 'buy' else "↓"
                     fees_usd = pos * fees_limit
-                    print_log("【"+side_txt+"】时间:"+stamp_to_date(t)+";价格:"+str(c)+";仓位:"+format(pos,'.6g')+";ATR:"+format(ATRP,'.4g')+"%;手续费:"+format(fees_usd,'.6g')+"              ",side_color)
+                    log_text = "【"+side_txt+"】时间:"+stamp_to_date(t)+";价格:"+str(c)+";仓位:"+format(pos,'.6g')+";ATR:"+format(ATRP,'.4g')+"%;手续费:"+format(fees_usd,'.6g')+"              "
+                    print_log(log_text,side_color)
+                    logfile.write_line("["+side_color+"]"+log_text)
                     amount = pos / c
                     order_dict = {
                             "exchange":exchange,
@@ -164,9 +170,15 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
                     elif order["side"] == 'sell':
                         profit = order["entry_position"] - order["current_position"]*(1+fees)
                     if profit >= 0:
-                        print_log(" 【止盈】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","+")
+                        #print_log(" 【止盈】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","+")
+                        log_text = " 【止盈】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         "
+                        side_color = "+"
                     else:
-                        print_log(" 【止损】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","-")
+                        #print_log(" 【止损】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         ","-")
+                        log_text = " 【止损】时间:"+stamp_to_date(t)+";价格:"+str(c)+"余额:"+format(final_balance,'.6g')+" --> "+format(final_balance + profit,'.6g')+"                         "
+                        side_color = '-'
+                    print_log(log_text,side_color)
+                    logfile.write_line("["+side_color+"]"+log_text)
                     final_balance += profit
                     trder.set_MARGIN(final_balance)
                     #print_log("时间"+ stamp_to_date(last_ts) +";余额:"+str(final_balance),"I")

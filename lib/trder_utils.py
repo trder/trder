@@ -21,6 +21,9 @@ def stamp_to_date(ts):
 def current_ts():
     return int(time.time()*1000)
 
+def current_ts_s():
+    return int(time.time())
+
 def last_day():
     return int(time.time()*1000) - interval_time['1d']
 

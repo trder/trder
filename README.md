@@ -49,7 +49,6 @@ P3平台：AI演化（神经进化算法）
 
 ``` Python3
 from trder import *
-
 '''
 唐奇安趋势系统
 以下内容摘自《海龟交易法则》：
@@ -59,41 +58,39 @@ from trder import *
 如果25日均线在350日均线之下，只能做空。
 这个系统还规定了2ATR的止损 退出点，这与原版海龟系统相同。
 '''
-def entry_signal(exchange,symbol) -> dict:
+def initialize(exchange:str,symbol:str,param:dict):
   '''
-  入场信号
-  输入：
-  exchange:交易所
-  symbol:符号
-  返回：
-  strategy策略对象（字典）
-  解释：
-  PRICE_USD：当前价格(USD)
-  MA350D：350日均线
-  MA25D：25日均线
-  DON20D_BREAK：是否突破唐奇安通道？（0未突破；1向上突破；-1向下突破）
-  VARS["TOTAL_POS"]: 当前总仓位(USD)
-  MARGIN：可用保证金余额
-  RISK: 每ATR波动对应的风险百分比
-  ATRP10D: 20日ATR波动百分比
+  初始化，调用一遍后续需要用到的指标
+  '''
+  e,s = exchange,symbol
+  TOTAL_POS() #当前仓位
+  MARGIN() #可用保证金
+  atrp = int(param['-atr']) if '-atr' in param else 10
+  ATRP(atrp,e,s)  #ATR比率
+  dc_days = int(param['-dc1']) if '-dc1' in param else 10
+  DONBREAK(dc_days,e,s) #唐奇安通道
+  dc2_days = int(param['-dc2']) if '-dc2' in param else 5
+  DONBREAK(dc2_days,e,s) #唐奇安通道
+
+def entry_signal(exchange:str,symbol:str,param:dict) -> dict:
+  '''
+  入市信号
+  返回:策略对象
   '''
   e,s = exchange,symbol
   risk = 1.0
-  if VARS["TOTAL_POS"] > 0:
+  dc_days = int(param['-dc1']) if '-dc1' in param else 10
+  atrp = int(param['-atr']) if '-atr' in param else 10
+  if TOTAL_POS() > 0:
     return None
-  #print("MARGIN",VARS["MARGIN"],"ATRP",ATRP10D[e,s])
-  pos = VARS["MARGIN"] * risk / ATRP10D[e,s]
-  #简化版的系统不考虑MA过滤器
-  #if DONBREAK[20,e,s] == 1 and MA25D[e,s] > MA350D[e,s]:
-  if DONBREAK[20,e,s] == 1:
+  pos = MARGIN() * risk / ATRP(atrp,e,s)
+  if DONBREAK(dc_days,e,s) == 1:
     strategy = {
     "sign":1.0, #信号强度
     "side":"buy", #方向：做多buy或做空sell
     "pos":pos #头寸大小：（以USD为单位）
     }
-  #简化版的系统不考虑MA过滤器
-  #elif DONBREAK[20,e,s] == -1 and MA25D[e,s] < MA350D[e,s]:
-  elif DONBREAK[20,e,s] == -1:
+  elif DONBREAK(dc_days,e,s) == -1:
     strategy = {
     "sign":1.0, #信号强度
     "side":"sell", #方向：做多buy或做空sell
@@ -101,53 +98,52 @@ def entry_signal(exchange,symbol) -> dict:
     }
   else:
     return None
-  #strategy策略对象
   return strategy
 
-def exit_signal(order) -> tuple:
-    '''
-    退出信号
-    输入：
-    order订单对象
-    order订单对象中的属性：
-    exchange:"bitfinex", #交易所
-    symbol:"BTC/USDT", #币种
-    side:"buy", #方向：做多buy或做空sell
-    order_id:"xxxxxxxxxxxxx", #订单编号
-    entry_price:50000.0, #平均成交价格
-    best_price:50010.0, #盈利最大价格
-    current_price: 50008.0 #当前价格
-    total_amount:"0.1", #数量
-    executed_amount:"0.04", #已执行数量
-    unexecuted_amount:"0.06", #未执行数量
-    status:1, #0未执行;1部分执行;2全部执行
-    timestamp:1650176916.000, #订单创建时间（秒）
-    fees":2.0, #已产生的手续费（美元）
-    ATR: 2500.0, #ATR
-    ATRP: 5.0 #ATR%
-    返回：
-    退出信号强度（介于[0,1]之间）
-    退出类型：0信号退出 1止损退出
-    '''
-    exit_sign = 0  #退出信号强度（介于[0,1]之间）
-    etype = 0 #退出类型：0信号退出 1止损退出
-    e,s = order.exchange,order.symbol
-    #print(order.current_price,order.entry_price,order.ATRP,order.side)
-    if order.side == 'buy':
-      if order.current_price < order.entry_price / ( 1 + order.ATRP / 100 * 2 ):
-        exit_sign = 1
-        etype = 1
-      elif DONBREAK[10,e,s] == -1:
-        exit_sign = 1
-        etype = 0
-    elif order.side == 'sell':
-      if order.current_price > order.entry_price * ( 1 + order.ATRP / 100 * 2 ):
-        exit_sign = 1
-        etype = 1
-      elif DONBREAK[10,e,s] == 1:
-        exit_sign = 1
-        etype = 0
-    return exit_sign, etype
+def exit_signal(order:str,param:dict) -> tuple:
+  '''
+  退出信号
+  输入：
+  order订单对象
+  order订单对象中的属性：
+  exchange:"bitfinex", #交易所
+  symbol:"BTC/USDT", #币种
+  side:"buy", #方向：做多buy或做空sell
+  order_id:"xxxxxxxxxxxxx", #订单编号
+  entry_price:50000.0, #平均成交价格
+  best_price:50010.0, #盈利最大价格
+  current_price: 50008.0 #当前价格
+  total_amount:"0.1", #数量
+  executed_amount:"0.04", #已执行数量
+  unexecuted_amount:"0.06", #未执行数量
+  status:1, #0未执行;1部分执行;2全部执行
+  timestamp:1650176916.000, #订单创建时间（秒）
+  fees":2.0, #已产生的手续费（美元）
+  ATR: 2500.0, #ATR
+  ATRP: 5.0 #ATR%
+  返回：
+  退出信号:范围[0,1]
+  退出类型:0信号退出,1止损退出
+  '''
+  exit_sign = 0  #退出信号强度（介于[0,1]之间）
+  etype = 0 #退出类型：0信号退出 1止损退出
+  dc_days = int(param['-dc2']) if '-dc2' in param else 5
+  e,s = order.exchange,order.symbol
+  if order.side == 'buy':
+    if order.current_price < order.entry_price / ( 1 + order.ATRP / 100 * 2 ):
+      exit_sign = 1
+      etype = 1
+    elif DONBREAK(dc_days,e,s) == -1:
+      exit_sign = 1
+      etype = 0
+  elif order.side == 'sell':
+    if order.current_price > order.entry_price * ( 1 + order.ATRP / 100 * 2 ):
+      exit_sign = 1
+      etype = 1
+    elif DONBREAK(dc_days,e,s) == 1:
+      exit_sign = 1
+      etype = 0
+  return exit_sign, etype
 ```
 更多示例代码：[API参考](https://github.com/trder/APIReference/blob/main/sample/trade_donchian/trading.py)。
 
@@ -165,11 +161,14 @@ def exit_signal(order) -> tuple:
 
 ## 可选参数
 
-> -log 日志路径 默认不记录日志
 > -sleep 抓取k线间隔（秒） 默认2秒
 > -since 模拟起始时间戳（秒） 默认一年前
 > -exchange 交易所 默认binance
 > -symbol 市场 默认BTC/USDT
+
+## 自定义参数
+
+用户可在标准参数后添加自定义参数，然后在交易系统中通过**param**字典调用这些自定义参数。
 
 ## 运行量化交易系统
 
@@ -231,8 +230,20 @@ trder的开发风格是先调用，再实现，自顶而下实现整个量化平
 
 8. 完善了XXXX
 
+或者：
+
+9. 删除了XXXX
+
+或者：
+
+10. 调整了XXXX
+
+或者：
+
+11. 重构了XXXX
+
 ----
 
 by AI纪元
 
-2022-06-1
+2022-06-04
