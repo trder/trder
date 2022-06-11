@@ -4,30 +4,12 @@
 
 一个能够创建、测试、运行量化交易系统以及训练量化交易AI的集成开发平台。
 
-P0平台：模拟交易
-P1平台：智能调优（遗传算法）
-P2平台：实盘交易
-P3平台：AI演化（神经进化算法）
-
 项目地址：https://github.com/trder/trder/
 
-## P0平台
+## trder分为P0/P1两个子项目
 
-P0平台只支持单个市场的模拟交易。
-
-P0平台是trder量化交易平台的一个精简版内核(总共只包含不到一千行代码)，是trder平台的第一个里程碑。
-
-P0平台是最小化的量化交易平台，只包含必要的最小化功能，它是整个量化平台最基础的部分。
-
-## 整体路线
-
-P0平台：模拟交易 <-- 当前阶段
-
-P1平台：智能调优（遗传算法）
-
-P2平台：实盘交易
-
-P3平台：AI演化（神经进化算法）
+P0平台：模拟交易（历史回测，参数调优，AI演化……）
+P1平台：实盘交易（binance交易，bitfinex交易，okx交易……）
 
 ## 下载
 
@@ -156,8 +138,10 @@ def exit_signal(order:str,param:dict) -> tuple:
 如:
 
 > cd trder
-> 
-> python eval.py donchian
+> python eval.py donchian -since 1609430400 -symbol BTCUSDT -dc1 12 -dc2 6 -atr 10
+> python eval.py donchian -since 1609430400 -symbol BTCUSDT -dc1 10 -dc2 5 -atr 10
+> python eval.py donchian -since 1609430400 -symbol BTCUSDT -dc1 8 -dc2 4 -atr 10
+> pause
 
 ## 可选参数
 
@@ -180,7 +164,7 @@ def exit_signal(order:str,param:dict) -> tuple:
 
 > cd trder
 > 
-> python run.py donchian
+> python run.py donchian -exchange binance -dc1 12 -dc2 6 -atr 10
 
 ## 自顶而下的构造
 
@@ -192,9 +176,9 @@ trder的开发风格是先调用，再实现，自顶而下实现整个量化平
 
 ## trder开发规范
 
-单次提交的代码不要超过100行！
+单次提交的代码请不要超过100行。
 
-如果是复杂的变更，拆分为多个子问题来处理，每个子问题单独提交。
+如果是复杂的变更，请拆分为多个子问题来处理，每个子问题单独提交。
 
 不同类型的变更应该分开提交。
 
@@ -242,8 +226,28 @@ trder的开发风格是先调用，再实现，自顶而下实现整个量化平
 
 11. 重构了XXXX
 
+## 发布规则
+
+P0平台与P1平台是包含在trder项目中同时发布的。
+
+trder项目的版本号会同时标注P0平台与P1平台的版本，命名规则为：
+
+> P0-xx-P1-yy
+
+其中`xx`代表P0平台的版本号，`yy`代表P1平台的版本号，版本号从1开始流水。
+
+例如：
+
+> P0-21-P1-1
+
+代表当前发布的是第21个版本的P0平台与第1个版本的P1平台。
+
+如果本次发布的版本同时影响了P0平台与P1平台的功能，那么P0与P1平台的版本会同时加1。
+
+每次发布的版本说明中必须包含涉及P0或P1平台的全部变更点。
+
 ----
 
 by AI纪元
 
-2022-06-04
+2022-06-11
