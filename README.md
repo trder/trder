@@ -158,13 +158,13 @@ def exit_signal(order:str,param:dict) -> tuple:
 
 > cd trder
 > 
-> python run.py 交易系统名
+> python run.py 交易系统名 -exchange  -apikey 账号key -apisecret 账号秘钥 -symbols [符号1,符号2]
 
 如:
 
 > cd trder
 > 
-> python run.py donchian -exchange binance -dc1 12 -dc2 6 -atr 10
+> python run.py donchian -exchange binance -apikey xxx -apisecret xxx -symbols [BTCUSDT,ETHUSDT] -dc1 12 -dc2 6 -atr 10
 
 ## 自顶而下的构造
 

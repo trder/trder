@@ -34,3 +34,9 @@ def load_source(trading_system_name):
     dir_name = "trade_"+trading_system_name
     trading_system_path = dir_name+"/trading.py"
     return read_file_as_str(trading_system_path)
+
+def check_param(param,arr):
+    for a in arr:
+        if a not in param:
+            return 400,"参数"+param+"必输"
+    return 200,'success'
