@@ -15,27 +15,15 @@ DON_FROM = 1 #唐奇安通道（从）
 DON_TO = 100 #唐奇安通道（到）
 
 inf = float("inf")
-def simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param):
+def simulate_trading_single(trading_system_name, exchange, symbols, symbol, init_balance, since, param):
     '''
     评估交易系统(单市场)
     '''
     final_balance, last_ts = init_balance, since
     floating_balance = final_balance
     source = load_source(trading_system_name)
-    #动态语法分析
-    #判断交易系统使用了哪些指标，动态计算这些指标
-    #print(source)
-    # DON_LIST = []
-    # for i in range(DON_FROM,DON_TO+1):
-    #     pat = r'DONBREAK\[\s*' + str(i) + r'\s*,'
-    #     #print(pat,re.search(pat,source))
-    #     if re.search(pat,source):
-    #         DON_LIST.append(i)
-    # print("DON_BREAK:",DON_LIST)
-    #ATRP10D_on = 'ATRP10D' in source
     order_list = []
     HQS,LQS = defaultdict(list),defaultdict(list)
-    #flog = log_file(param['-log']) if '-log' in param else None
     logname = log_file.generate_filename((trading_system_name,)+reduce(lambda a,b:a+b,param.items()))
     logfile = log_file(logname)
     dir_name = "trade_"+trading_system_name
@@ -43,7 +31,11 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
     initialize_signal_func = get_func(trading_lib_name,["trading","initialize"])
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
-    initialize_signal_func(exchange, symbol, param) #交易系统初始化
+    if symbols:
+        for symbol in symbols:
+            initialize_signal_func(exchange, symbol, param) #交易系统初始化
+    else:
+        initialize_signal_func(exchange, symbol, param) #交易系统初始化
     daymins = 24 * 60 * 60 * 1000
     @cache
     def expires(days):
@@ -63,7 +55,6 @@ def simulate_trading_single(trading_system_name, exchange, symbol, init_balance,
             return floating_balance, t
         for t,o,h,l,c,v in kline_1m:
             #calculate
-            #for DON_I in DON_LIST:
             for DON_I,_exchange,_symbol in trder.USED_DON():
                 if _exchange == exchange and _symbol == symbol:
                     exp2 = t + expires(DON_I)

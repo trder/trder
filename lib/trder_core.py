@@ -5,6 +5,7 @@ from lib.trder_simulate import *
 from lib.trder_utils import *
 from lib.trder_log import *
 import time
+import json
 
 def check_trading_system(trading_system_name,param):
     '''
@@ -31,7 +32,7 @@ def check_trading_system(trading_system_name,param):
     if not func_exist(trading_lib_name,["trading","exit_signal"]):
         return 400, "方法"+trading_lib_name+".exit_signal不存在！"
     return 200, "交易系统'"+trading_system_name+"'载入成功！"
-    
+
 def eval_trading_system(trading_system_name,param):
     '''
     评估交易系统
@@ -39,12 +40,23 @@ def eval_trading_system(trading_system_name,param):
     since = int(param['-since'])*1000 if '-since' in param else last_year()
     exchange = str(param['-exchange']) if '-exchange' in param else "binance"
     symbol = str(param['-symbol']) if '-symbol' in param else "BTC/USDT"
+    symbols = json.loads(str(param['-symbols'])) if '-symbols' in param else []
     init_balance = 1000.0
     tm = datetime.datetime.now()
-    print_log("交易所:" + exchange + ";市场:" + symbol,"I")
+    if symbols:
+        print_log("交易所:" + exchange + ";市场:" + symbols,"I")
+    else:
+        print_log("交易所:" + exchange + ";市场:" + symbol,"I")
     print_log("初始余额:"+str(init_balance)+";开始时间:"+stamp_to_date(since)+" UTC","I")
     print_log("系统时间:"+str(tm),"I")
-    final_balance, last_ts = simulate_trading_single(trading_system_name, exchange, symbol, init_balance, since, param)
+    final_balance, last_ts = simulate_trading_single(
+        trading_system_name, 
+        exchange, 
+        symbols, 
+        symbol, 
+        init_balance, 
+        since, 
+        param)
     tm = datetime.datetime.now()
     print_log("系统时间:"+str(tm),"I")
     return 200,"最终余额:"+str(final_balance)+",结束时间:"+stamp_to_date(last_ts)
