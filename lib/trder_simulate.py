@@ -19,6 +19,9 @@ def simulate_trading_single(trading_system_name, exchange, symbols, symbol, init
     '''
     评估交易系统(单市场)
     '''
+    #将单市场转换为多市场来处理
+    if not symbols:
+        symbols.append(symbol)
     final_balance, last_ts = init_balance, since
     floating_balance = final_balance
     source = load_source(trading_system_name)
@@ -31,10 +34,7 @@ def simulate_trading_single(trading_system_name, exchange, symbols, symbol, init
     initialize_signal_func = get_func(trading_lib_name,["trading","initialize"])
     entry_signal_func = get_func(trading_lib_name,["trading","entry_signal"])
     exit_signal_func = get_func(trading_lib_name,["trading","exit_signal"])
-    if symbols:
-        for symbol in symbols:
-            initialize_signal_func(exchange, symbol, param) #交易系统初始化
-    else:
+    for symbol in symbols:
         initialize_signal_func(exchange, symbol, param) #交易系统初始化
     daymins = 24 * 60 * 60 * 1000
     @cache
@@ -47,8 +47,18 @@ def simulate_trading_single(trading_system_name, exchange, symbols, symbol, init
     t = last_ts
     trade_count = 0
     while True:
-        code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts,param)
-        if code != 200 or last_ts >= last_3days():
+        code_list = []
+        kline_1m_list = []
+        last_ts_list = []
+        exit_flag = True
+        for symbol in symbols:
+            code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts,param)
+            code_list.append(code)
+            kline_1m_list.append(kline_1m)
+            last_ts_list.append(last_ts)
+            if code == 200 and last_ts < last_3days():
+                exit_flag = False
+        if exit_flag:
             logtext = "时间:"+ stamp_to_date(last_ts) +";价格:"+str(c)+";ATR:"+format(ATRP,'.4g')+"%;余额估算:"+format(floating_balance,'.6g')+";交易次数:"+str(trade_count)
             logfile.write_line(logtext)
             logfile.append_filename("_score_"+format(floating_balance,'.6g'))
