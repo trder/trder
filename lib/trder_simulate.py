@@ -15,7 +15,7 @@ DON_FROM = 1 #唐奇安通道（从）
 DON_TO = 100 #唐奇安通道（到）
 
 inf = float("inf")
-def simulate_trading_single(trading_system_name, exchange, symbols, symbol, init_balance, since, param):
+def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, init_balance, since, param):
     '''
     评估交易系统(单市场)
     '''

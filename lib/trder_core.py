@@ -49,7 +49,7 @@ def eval_trading_system(trading_system_name,param):
         print_log("交易所:" + exchange + ";市场:" + symbol,"I")
     print_log("初始余额:"+str(init_balance)+";开始时间:"+stamp_to_date(since)+" UTC","I")
     print_log("系统时间:"+str(tm),"I")
-    final_balance, last_ts = simulate_trading_single(
+    final_balance, last_ts = simulate_trading_multiple(
         trading_system_name, 
         exchange, 
         symbols, 
