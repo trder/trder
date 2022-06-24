@@ -37,6 +37,7 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
     for symbol in symbols:
         initialize_signal_func(exchange, symbol, param) #交易系统初始化
     daymins = 24 * 60 * 60 * 1000
+    n_symbol = len(symbol)
     @cache
     def expires(days):
         return days * daymins
@@ -50,6 +51,7 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
         code_list = []
         kline_1m_list = []
         last_ts_list = []
+        pos = [-1] * n_symbol
         exit_flag = True
         for symbol in symbols:
             code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts,param)
@@ -63,6 +65,17 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
             logfile.write_line(logtext)
             logfile.append_filename("_score_"+format(floating_balance,'.6g'))
             return floating_balance, t
+        min_t = inf #开始时间（毫秒）
+        max_t = -inf #结束时间（毫秒）
+        for kline_1m in kline_1m_list:
+            min_t = min(min_t,int(kline_1m[0][0]))
+            max_t = min(max_t,int(kline_1m[-1][0]))
+        cur_t = min_t
+        while cur_t<=max_t:
+            for idx in range(n_symbol):
+                p1 = pos[idx]
+                p2 = p1+1
+                
         for t,o,h,l,c,v in kline_1m:
             #calculate
             for DON_I,_exchange,_symbol in trder.USED_DON():
