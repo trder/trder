@@ -47,14 +47,46 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
     trder.set_TOTAL_POS(0)
     t = last_ts
     trade_count = 0
-    while True:
-        code_list = []
-        kline_1m_list = []
-        last_ts_list = []
-        pos = [-1] * n_symbol
+
+    #k线双端队列，已经完成模拟的K线从左边弹出，新取出的K线从右边插入
+    kline_1m_list = [deque() for _ in range(n_symbol)]
+
+    #记录该市场被弹出的最后一次K线
+    kline_last_list = [None] * n_symbol
+
+    #记录该市场的K线是否需要继续采集
+    kline_end = [False] * n_symbol
+
+    #模拟从输入的since时间戳开始
+    current_ts = since
+
+    #模拟到三天前的时间戳结束
+    while current_ts < last_3days():
         exit_flag = True
         for idx in range(n_symbol):
-            pass
+            #如果K线deque存在记录，弹出过期K线，并记录最后一个被弹出的价格
+            while kline_1m_list[idx] and kline_1m_list[idx][0][0] < current_ts:
+                 expired_line = kline_1m_list[idx].popleft()
+                 kline_last_list[idx] = expired_line
+            #deque为空，触发k线采集
+            if not kline_1m_list[idx]:
+                code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",current_ts,param)
+                if code != 200:
+                    # 如果k线采集失败，就表示该市场已经暂时停止了交易，
+                    # 添加结束标记，后续需要强制退出所有头寸
+                    kline_end[idx] = True
+                else:
+                    kline_end[idx] = False
+                    #将新K线添加到右侧
+                    kline_1m_list[idx].extend(kline_1m)
+            else:
+                #当前价格赋值
+                if kline_1m_list[idx][0][0] == current_ts:
+                    kline_last_list[idx] = kline_1m_list[idx][0]
+        
+        #时间戳向前推进一分钟
+        current_ts += 60000
+        '''
         for symbol in symbols:
             code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts,param)
             code_list.append(code)
@@ -67,6 +99,7 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
             logfile.write_line(logtext)
             logfile.append_filename("_score_"+format(floating_balance,'.6g'))
             return floating_balance, t
+        '''
         min_t = inf #开始时间（毫秒）
         max_t = -inf #结束时间（毫秒）
         for kline_1m in kline_1m_list:
