@@ -99,7 +99,6 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
             logfile.write_line(logtext)
             logfile.append_filename("_score_"+format(floating_balance,'.6g'))
             return floating_balance, t
-        '''
         min_t = inf #开始时间（毫秒）
         max_t = -inf #结束时间（毫秒）
         for kline_1m in kline_1m_list:
@@ -123,6 +122,7 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
 
 
             cur_t += 60000 #每次移动一分钟
+        '''
         
         for t,o,h,l,c,v in kline_1m:
             #calculate
