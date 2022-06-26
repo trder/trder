@@ -53,10 +53,12 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
         last_ts_list = []
         pos = [-1] * n_symbol
         exit_flag = True
+        for idx in range(n_symbol):
+            pass
         for symbol in symbols:
             code,kline_1m,last_ts = read_klines_once(exchange,symbol,"1m",last_ts,param)
             code_list.append(code)
-            kline_1m_list.append(kline_1m)
+            kline_1m_list.append(kline_1m+[inf])
             last_ts_list.append(last_ts)
             if code == 200 and last_ts < last_3days():
                 exit_flag = False
@@ -68,14 +70,27 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
         min_t = inf #开始时间（毫秒）
         max_t = -inf #结束时间（毫秒）
         for kline_1m in kline_1m_list:
-            min_t = min(min_t,int(kline_1m[0][0]))
-            max_t = min(max_t,int(kline_1m[-1][0]))
+            if len(kline_1m)>1:
+                min_t = min(min_t,int(kline_1m[0][0]))
+                max_t = min(max_t,int(kline_1m[-2][0]))
+        
+        #滑动当前时间指针，再依次更新每个市场的K线指针
         cur_t = min_t
         while cur_t<=max_t:
+            #枚举每个市场，更新时间指针位置
             for idx in range(n_symbol):
-                p1 = pos[idx]
-                p2 = p1+1
-                
+                #如果当前时间大于该市场的下一个指针所指向的时间，则向右移动该指针
+                while cur_t > kline_1m_list[idx][pos[idx]+1][0]:
+                    pos[idx]+=1
+                #如果该市场还没开始交易
+                if pos[idx] == -1:
+                    continue
+                #读取当前市场在该时间戳的信息
+                t,o,h,l,c,v = kline_1m_list[idx][pos[idx]]
+
+
+            cur_t += 60000 #每次移动一分钟
+        
         for t,o,h,l,c,v in kline_1m:
             #calculate
             for DON_I,_exchange,_symbol in trder.USED_DON():
