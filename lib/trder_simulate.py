@@ -80,10 +80,10 @@ def simulate_trading_multiple(trading_system_name, exchange, symbols, symbol, in
                     #将新K线添加到右侧
                     kline_1m_list[idx].extend(kline_1m)
             else:
-                #当前价格赋值
+                #如果队列头部的时间戳等于当前时间戳，则覆盖当前价格信息（否则保持为上一次的价格信息）
                 if kline_1m_list[idx][0][0] == current_ts:
                     kline_last_list[idx] = kline_1m_list[idx][0]
-        
+                
         #时间戳向前推进一分钟
         current_ts += 60000
         '''
