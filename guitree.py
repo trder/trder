@@ -79,7 +79,7 @@ class guitree:
             ele2 = guitree.LAB("选项2：未定义")
         github = guitree.github()
         if parent:
-            parent_title = "<< "+parent.title
+            parent_title = "<< 返回"
             ele0 = guitree.BTN_BACK(parent_title)
             layout = [
                 [ele0],
