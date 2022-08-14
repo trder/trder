@@ -2,23 +2,59 @@ from guitree import *
 
 guidata = guitree("trder量化平台",
                   guitree("交易系统",
-                          guitree("新建交易系统",
-                                  None,
-                                  None
+                          guitree("创建交易系统",
+                                  guitree("API参考文档",
+                                          None,
+                                          None
+                                          ),
+                                  guitree("开始创建",
+                                          None,
+                                          None
+                                          )
                                   ),
-                          guitree("编辑交易系统",
-                                  None,
-                                  None
+                          guitree("浏览交易系统",
+                                  guitree("交易系统商店",
+                                          guitree("官方交易系统",
+                                                guitree("官方机械交易系统",
+                                                        None,
+                                                        None
+                                                        ),
+                                                guitree("官方AI交易系统",
+                                                        None,
+                                                        None
+                                                        )
+                                                  ),
+                                          guitree("第三方交易系统",
+                                                  None,
+                                                  None
+                                                  )
+                                          ),
+                                  guitree("本地交易系统",
+                                          None,
+                                          None
+                                          )
                                   )
                           ),
                   guitree("开始交易",
                           guitree("模拟交易",
-                                  None,
-                                  None
+                                  guitree("选项1",
+                                          None,
+                                          None
+                                          ),
+                                  guitree("选项2",
+                                          None,
+                                          None
+                                          )
                                   ),
                           guitree("实盘交易",
-                                  None,
-                                  None
+                                  guitree("选项1",
+                                          None,
+                                          None
+                                          ),
+                                  guitree("选项2",
+                                          None,
+                                          None
+                                          )
                                   )
                           ),
                   )
