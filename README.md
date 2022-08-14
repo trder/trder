@@ -69,6 +69,10 @@ P1平台：实盘交易（binance交易，bitfinex交易，okx交易……）
 
 > pip install -r requirements.txt
 
+## 运行图形界面
+
+> python gui.py
+
 ## 创建交易系统
 
 在trder目录下(与trder.py同级的目录)，创建`trade_交易系统名`文件夹。如`trade_donchian`。
