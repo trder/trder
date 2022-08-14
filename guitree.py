@@ -4,10 +4,11 @@ import PySimpleGUI as sg
 import webbrowser
 
 class guitree:
-    def __init__(self, title, tree1, tree2):
+    def __init__(self, title, tree1, tree2, guipage = None):
         self.title = title
         self.tree1 = tree1
         self.tree2 = tree2
+        self.guipage = guipage
 
     @staticmethod
     def elesize():

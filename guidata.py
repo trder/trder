@@ -1,4 +1,5 @@
 from guitree import *
+from GuiPage.TradingSystemInfoPage import *
 
 guidata = guitree("trder量化平台",
                   guitree("交易系统",
@@ -16,8 +17,22 @@ guidata = guitree("trder量化平台",
                                   guitree("交易系统商店",
                                           guitree("官方交易系统",
                                                 guitree("官方机械交易系统",
-                                                        None,
-                                                        None
+                                                        guitree("官方趋势交易系统",
+                                                                guitree("唐奇安趋势突破交易系统",
+                                                                        None,
+                                                                        None,
+                                                                        TradingSystemInfoPage("DonchianTrend")
+                                                                        ),
+                                                                guitree("MACD趋势突破交易系统",
+                                                                        None,
+                                                                        None,
+                                                                        TradingSystemInfoPage("MACDTrend")
+                                                                        )
+                                                                ),
+                                                        guitree("官方反趋势交易系统",
+                                                                None,
+                                                                None
+                                                                )
                                                         ),
                                                 guitree("官方AI交易系统",
                                                         None,
