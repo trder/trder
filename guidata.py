@@ -21,12 +21,18 @@ guidata = guitree("trder量化平台",
                                                                 guitree("唐奇安趋势突破交易系统",
                                                                         None,
                                                                         None,
-                                                                        TradingSystemInfoPage("DonchianTrend")
+                                                                        TradingSystemInfoPage("唐奇安趋势突破交易系统",
+                                                                        '''唐奇安趋势系统，它是当年的海龟系统的一个简化版本。
+                                                                        趋势方向：如果25日均线在350日均线之上，只能做多；如果25日均线在350日均线之下，只能做空。
+                                                                        趋势过滤：它采用20日最高点突破入市策略。20日最高点突破开多；跌破20日最低点开空。'''
+                                                                        )
                                                                         ),
                                                                 guitree("MACD趋势突破交易系统",
                                                                         None,
                                                                         None,
-                                                                        TradingSystemInfoPage("MACDTrend")
+                                                                        TradingSystemInfoPage("MACD趋势突破交易系统",
+                                                                        ""
+                                                                        )
                                                                         )
                                                                 ),
                                                         guitree("官方反趋势交易系统",

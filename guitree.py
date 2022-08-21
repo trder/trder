@@ -3,12 +3,16 @@ from ctypes import alignment
 import PySimpleGUI as sg
 import webbrowser
 
+from GuiPage.DefaultPage import DefaultPage
+from GuiPage.GuiPage import GuiPage
+
 class guitree:
-    def __init__(self, title, tree1, tree2, guipage = None):
+    def __init__(self, title, tree1, tree2, guipage = DefaultPage()):
         self.title = title
         self.tree1 = tree1
         self.tree2 = tree2
         self.guipage = guipage
+        self.guipage.title = title
 
     @staticmethod
     def elesize():
@@ -66,51 +70,51 @@ class guitree:
     def show(self, parent=None):
         self.parent = parent
         sg.theme('DarkAmber')   # Add a touch of color
-        # sg.theme('DarkRed')   # Add a touch of color
-        # sg.theme('Black')   # Add a touch of color
-        # sg.theme('DarkBlack')   # Add a touch of color
-        # All the stuff inside your window.
-        if self.tree1:
-            ele1 = guitree.BTN(self.tree1.title)
+        # All the stuff inside your window
+        if not self.tree1 and not self.tree2:
+            self.guipage.show(parent)
         else:
-            ele1 = guitree.LAB("选项1：未定义")
-        if self.tree2:
-            ele2 = guitree.BTN(self.tree2.title)
-        else:
-            ele2 = guitree.LAB("选项2：未定义")
-        github = guitree.github()
-        if parent:
-            parent_title = "<< 返回"
-            ele0 = guitree.BTN_BACK(parent_title)
-            layout = [
-                [ele0],
-                [ele1],
-                [ele2],
-                [github]
-            ]
-        else:
-            parent_title = "<<"
-            layout = [
-                [ele1],
-                [ele2],
-                [github]
-            ]
+            if self.tree1:
+                ele1 = guitree.BTN(self.tree1.title)
+            else:
+                ele1 = guitree.LAB("选项1：未定义")
+            if self.tree2:
+                ele2 = guitree.BTN(self.tree2.title)
+            else:
+                ele2 = guitree.LAB("选项2：未定义")
+            github = guitree.github()
+            if parent:
+                parent_title = "<< 返回"
+                ele0 = guitree.BTN_BACK(parent_title)
+                layout = [
+                    [ele0],
+                    [ele1],
+                    [ele2],
+                    [github]
+                ]
+            else:
+                parent_title = "<<"
+                layout = [
+                    [ele1],
+                    [ele2],
+                    [github]
+                ]
 
-        # Create the Window
-        window = sg.Window(self.title, layout, resizable=False, finalize=True)
+            # Create the Window
+            window = sg.Window(self.title, layout, resizable=False, finalize=True)
 
-        while True:
-            event, values = window.read()
-            if event == sg.WIN_CLOSED:
-                break
-            if self.tree1 and event == self.tree1.title:
-                window.close()
-                self.tree1.show(self)
-            elif self.tree2 and event == self.tree2.title:
-                window.close()
-                self.tree2.show(self)
-            elif parent and event == parent_title:
-                window.close()
-                self.parent.show(self.parent.parent)
-            elif event == 'github':
-                webbrowser.open("https://github.com/trder/trder")
+            while True:
+                event, values = window.read()
+                if event == sg.WIN_CLOSED:
+                    break
+                if self.tree1 and event == self.tree1.title:
+                    window.close()
+                    self.tree1.show(self)
+                elif self.tree2 and event == self.tree2.title:
+                    window.close()
+                    self.tree2.show(self)
+                elif parent and event == parent_title:
+                    window.close()
+                    self.parent.show(self.parent.parent)
+                elif event == 'github':
+                    GuiPage.navi_github()
